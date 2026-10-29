@@ -2,6 +2,8 @@
 
 Live weather for Azerbaijan, with a sky that changes with the weather. Portfolio project.
 
+**🌤 Live: [az-hava.vercel.app](https://az-hava.vercel.app)** — open it on your phone and press "Install app" to add it to your home screen.
+
 - **Cities:** 18 Azerbaijani cities (Baku, Ganja, Sumgait, Shaki, Lankaran, Quba, Gabala, Shusha, Nakhchivan, Khankendi…), 10 world cities, and worldwide search.
 - **Forecast:** current conditions, the next 24/48 hours (temperature curve and chance of precipitation), and 7/16 days with an expandable detail panel for each day.
 - **Details:** feels-like temperature, humidity and dew point, wind (compass), pressure (gauge), UV index, precipitation, sunrise/sunset (live sun arc), visibility, and air quality (European AQI plus 6 pollutants).
