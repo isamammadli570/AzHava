@@ -246,6 +246,11 @@
     to { stroke-dashoffset: 0; }
 }
 
+/* Fades in to whatever opacity the element already has (no `to`), so it works for 0.7-opacity clouds too. */
+@keyframes appear {
+    from { opacity: 0; }
+}
+
 @keyframes burst {
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.2); }
@@ -283,14 +288,6 @@
 @keyframes beam {
     from { opacity: 0.35; transform: translateX(0); }
     to { opacity: 1; transform: translateX(-40px); }
-}
-
-@keyframes vt-out {
-    to { opacity: 0; transform: scale(0.985); }
-}
-
-@keyframes vt-in {
-    from { opacity: 0; transform: translateY(14px); }
 }
 
 @keyframes bar-grow {
@@ -345,21 +342,22 @@
     to { transform: translateX(12%); }
 }
 
+/* Icon motions move a whole layer <svg>; distances are in % of the icon so every size looks the same. */
 @keyframes drop-fall {
-    0% { transform: translateY(-6px); opacity: 0; }
+    0% { transform: translateY(-9%); opacity: 0; }
     30% { opacity: 1; }
-    100% { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(16%); opacity: 0; }
 }
 
 @keyframes flake-fall {
-    0% { transform: translate(0, -5px) rotate(0deg); opacity: 0; }
+    0% { transform: translate(0, -8%) rotate(0deg); opacity: 0; }
     30% { opacity: 1; }
-    100% { transform: translate(3px, 10px) rotate(90deg); opacity: 0; }
+    100% { transform: translate(5%, 16%) rotate(90deg); opacity: 0; }
 }
 
 @keyframes icon-drift {
     0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(3px); }
+    50% { transform: translateX(4.5%); }
 }
 
 @keyframes icon-flash {
@@ -370,14 +368,14 @@
 }
 
 /* ───────────────────────────── Animated weather icons ───────────────────────────── */
-.wi-spin { transform-box: fill-box; transform-origin: center; animation: spin 24s linear infinite; }
-.wi-glow { transform-box: fill-box; transform-origin: center; animation: glow-pulse 4s ease-in-out infinite; }
-.wi-drift { animation: icon-drift 5s ease-in-out infinite; }
-.wi-drop { animation: drop-fall 1.1s linear infinite; }
-.wi-flake { transform-box: fill-box; transform-origin: center; animation: flake-fall 2.6s linear infinite; }
-.wi-flash { animation: icon-flash 3s ease-in-out infinite; }
-.wi-fog { animation: icon-drift 4s ease-in-out infinite; }
-.wi-static * { animation: none !important; }
+/* Applied to whole layer <svg>s (see WeatherIcon), never to shapes inside an SVG, so they stay on the compositor. */
+.wi-spin { animation: spin 24s linear infinite; will-change: transform; }
+.wi-glow { animation: glow-pulse 4s ease-in-out infinite; will-change: transform, opacity; }
+.wi-drift { animation: icon-drift 5s ease-in-out infinite; will-change: transform; }
+.wi-drop { animation: drop-fall 1.1s linear infinite; will-change: transform, opacity; }
+.wi-flake { animation: flake-fall 2.6s linear infinite; will-change: transform, opacity; }
+.wi-flash { animation: icon-flash 3s ease-in-out infinite; will-change: opacity; }
+.wi-fog { animation: icon-drift 4s ease-in-out infinite; will-change: transform; }
 
 /* ───────────────────────────── Sky scene pieces ───────────────────────────── */
 .sky-cloud {
@@ -470,25 +468,6 @@
     }
 }
 
-/* ───────────────────────────── Page transitions ─────────────────────────────
-   Same-document View Transitions: the page cross-fades and lifts, while the header and the sky stay put. */
-::view-transition-old(root) {
-    animation: vt-out 220ms var(--ease-in-out) both;
-}
-
-::view-transition-new(root) {
-    animation: vt-in 420ms var(--ease-out) both;
-}
-
-::view-transition-group(place-title) {
-    animation-duration: 420ms;
-    animation-timing-function: var(--ease-out);
-}
-
-::view-transition-old(sky),
-::view-transition-new(sky) {
-    animation: none;
-}
 
 
 /* ───────────────────────────── Reduced motion ─────────────────────────────
@@ -519,11 +498,32 @@
     .reveal {
         animation: none !important;
     }
+}
 
-    ::view-transition-group(*),
-    ::view-transition-old(*),
-    ::view-transition-new(*) {
-        animation: none !important;
+/* Light preset, switched on by `initAdaptiveQuality` when a device cannot hold ~50 fps (or asks to save data).
+   Keeps the look (gradient sky, clouds, rain, icons) and drops what costs the most for the least. */
+:root[data-quality="low"] {
+    .glass,
+    .glass-strong {
+        background: rgb(12 21 44 / 0.72);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .sky-star,
+    .sky-meteor,
+    .sky-wind,
+    .sky-beam,
+    .sky-cloud:nth-child(n + 5) {
+        display: none;
+    }
+
+    .spotlight::before {
+        display: none;
+    }
+
+    .reveal {
+        animation: none;
     }
 }
 

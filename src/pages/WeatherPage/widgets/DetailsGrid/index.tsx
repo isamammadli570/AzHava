@@ -1,3 +1,4 @@
+import {memo} from "react";
 import {Droplets, Eye, Thermometer, Umbrella, SunMedium} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import type {AirQualityCurrent} from "@/api/airQuality.api";
@@ -35,7 +36,7 @@ type DetailsGridProps = {
 };
 
 /** The "everything else" tiles under the hourly chart; each one rises in as it scrolls into view. */
-export const DetailsGrid = ({current, today, hours, timezone, air, isAirLoading}: DetailsGridProps) => {
+export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoading}: DetailsGridProps) => {
     const {t} = useTranslation("weather");
     const feelsDelta = current.apparent_temperature - current.temperature_2m;
     const feelsKey = Math.abs(feelsDelta) < 2 ? "feelsSame" : feelsDelta > 0 ? "feelsWarmer" : "feelsColder";
@@ -124,4 +125,4 @@ export const DetailsGrid = ({current, today, hours, timezone, air, isAirLoading}
             </div>
         </section>
     );
-};
+});

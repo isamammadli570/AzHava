@@ -1,5 +1,6 @@
-import {useState, type CSSProperties} from "react";
+import {useState, type CSSProperties, type ReactNode} from "react";
 import {CONDITION, skyClass, type Scene} from "@/helpers/weather";
+import {useLingering} from "@/hooks/useLingering";
 import {cn} from "@/lib/utils";
 import {Precipitation, type PrecipitationKind} from "@/widgets/SkyBackground/Precipitation";
 
@@ -65,7 +66,40 @@ const CloudShape = ({width}: {width: number}) => (
     </svg>
 );
 
-const fade = (isVisible: boolean) => cn("transition-opacity duration-(--duration-sky)", isVisible ? "opacity-100" : "opacity-0");
+const SKY_FADE_MS = 1600;
+
+type SkyLayerProps = {show: boolean; className?: string; hiddenClassName?: string; children?: ReactNode};
+
+/**
+ * A sky element that fades in when it appears, fades out when it goes, and is then removed from the page:
+ * an invisible-but-mounted layer would keep animating and cost frames for nothing.
+ */
+const SkyLayer = ({show, className, hiddenClassName = "opacity-0", children}: SkyLayerProps) => {
+    const isMounted = useLingering(show, SKY_FADE_MS);
+    if (!isMounted) return null;
+    return (
+        <div className={cn("animate-[appear_var(--duration-sky)_var(--ease-out)] transition-[opacity,translate] duration-(--duration-sky) ease-(--ease-out)", className, !show && hiddenClassName)}>
+            {children}
+        </div>
+    );
+};
+
+type CloudProps = {cloud: (typeof CLOUDS)[number]; show: boolean; isWindy: boolean};
+
+const Cloud = ({cloud, show, isWindy}: CloudProps) => {
+    const isMounted = useLingering(show, SKY_FADE_MS);
+    if (!isMounted) return null;
+    return (
+        <div
+            className="sky-cloud"
+            style={{top: `${cloud.top}%`, "--duration": `${cloud.duration / (isWindy ? 2.2 : 1)}s`, "--delay": `${cloud.delay}s`, "--rest": `${cloud.rest}vw`} as CSSProperties}
+        >
+            <div className="animate-[appear_var(--duration-sky)_var(--ease-out)] transition-opacity duration-(--duration-sky)" style={{opacity: show ? cloud.opacity : 0}}>
+                <CloudShape width={cloud.width}/>
+            </div>
+        </div>
+    );
+};
 
 type SkyBackgroundProps = {scene: Scene};
 
@@ -89,7 +123,7 @@ export const SkyBackground = ({scene}: SkyBackgroundProps) => {
     if (layers.current !== activeClass) setLayers({current: activeClass, previous: layers.current});
 
     return (
-        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background [view-transition-name:sky]">
+        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background">
             <div className={cn("absolute inset-0", layers.previous)}/>
             <div key={layers.current} className={cn("absolute inset-0 animate-[fade-in_var(--duration-sky)_var(--ease-in-out)_both]", layers.current)}/>
 
@@ -114,64 +148,50 @@ export const SkyBackground = ({scene}: SkyBackgroundProps) => {
             )}
 
             {/* Sun with slow god rays */}
-            <div
-                className={cn(
-                    "absolute top-[-9rem] right-[-9rem] size-[26rem] transition-[opacity,translate] duration-(--duration-sky) ease-(--ease-out) sm:top-[-4rem] sm:right-[6%]",
-                    isDay && isClearish ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0",
-                    isDay && condition !== CONDITION.CLEAR && isClearish && "opacity-70",
-                )}
+            <SkyLayer
+                show={isDay && isClearish}
+                hiddenClassName="translate-y-16 opacity-0"
+                className={cn("absolute top-[-9rem] right-[-9rem] size-[26rem] sm:top-[-4rem] sm:right-[6%]", condition !== CONDITION.CLEAR && "opacity-70")}
             >
                 <div className="absolute inset-0 animate-[glow-pulse_8s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle,rgb(255_220_140/0.55)_0%,rgb(255_200_87/0.18)_35%,transparent_68%)]"/>
                 <div className="absolute inset-[5.5rem] animate-[spin_120s_linear_infinite] rounded-full bg-[repeating-conic-gradient(from_0deg,rgb(255_236_179/0.16)_0deg_6deg,transparent_6deg_18deg)] [mask-image:radial-gradient(circle,#000_30%,transparent_70%)]"/>
                 <div className="absolute inset-[9.5rem] rounded-full bg-[radial-gradient(circle_at_38%_35%,#fff7d6,#ffd36b_45%,#ffab2e)] shadow-[0_0_80px_30px_rgb(255_200_87/0.45)]"/>
-            </div>
-            <div className={cn("absolute inset-0", fade(isDay && isClearish))}>
+            </SkyLayer>
+            <SkyLayer show={isDay && isClearish} className="absolute inset-0">
                 <div className="sky-beam absolute top-[-20%] right-[12%] h-[140%] w-40 rotate-[28deg] bg-gradient-to-b from-[rgb(255_236_179/0.16)] to-transparent blur-2xl"/>
                 <div className="sky-beam absolute top-[-20%] right-[30%] h-[140%] w-24 rotate-[34deg] bg-gradient-to-b from-[rgb(255_236_179/0.12)] to-transparent blur-2xl [--delay:-4s]"/>
-            </div>
+            </SkyLayer>
 
             {/* Moon */}
-            <div
+            <SkyLayer
+                show={!isDay && (isClearish || condition === CONDITION.CLOUDY)}
+                hiddenClassName="translate-y-16 opacity-0"
                 className={cn(
-                    "absolute top-[3.5rem] right-[8%] size-20 rounded-full transition-[opacity,translate] duration-(--duration-sky) ease-(--ease-out) sm:top-[5rem] sm:size-24",
+                    "absolute top-[3.5rem] right-[8%] size-20 rounded-full sm:top-[5rem] sm:size-24",
                     "bg-[radial-gradient(circle_at_35%_35%,#fffdf4,#e3e7f5_55%,#b9c2dc)] shadow-[0_0_70px_24px_rgb(200_215_255/0.22)]",
-                    !isDay && isClearish ? "translate-y-0 opacity-100" : !isDay && condition === CONDITION.CLOUDY ? "translate-y-4 opacity-20" : "translate-y-16 opacity-0",
+                    condition === CONDITION.CLOUDY && "translate-y-4 opacity-20",
                 )}
             >
                 <span className="absolute top-[28%] left-[30%] size-[18%] rounded-full bg-[#c9cfe2]/70"/>
                 <span className="absolute top-[56%] left-[55%] size-[12%] rounded-full bg-[#c9cfe2]/60"/>
                 <span className="absolute top-[62%] left-[26%] size-[9%] rounded-full bg-[#c9cfe2]/50"/>
-            </div>
+            </SkyLayer>
 
             {/* Rainbow after light rain in daylight */}
-            <div className={cn("absolute bottom-[-35vmax] left-[-10vmax] size-[90vmax] rounded-full", fade(hasRainbow))}>
+            <SkyLayer show={hasRainbow} className="absolute bottom-[-35vmax] left-[-10vmax] size-[90vmax] rounded-full">
                 <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,transparent_56%,rgb(255_80_80/0.16)_57%,rgb(255_170_60/0.16)_59%,rgb(255_235_90/0.14)_61%,rgb(90_220_120/0.12)_63%,rgb(80_160_255/0.12)_65%,rgb(150_100_255/0.1)_67%,transparent_69%)]"/>
-            </div>
+            </SkyLayer>
 
-            {/* Clouds */}
+            {/* Clouds: only as many as the weather needs exist at all. */}
             <div className="absolute inset-0 transition-colors duration-(--duration-sky)" style={{color: cloudColor(scene)}}>
-                {CLOUDS.map((cloud) => (
-                    <div
-                        key={cloud.order}
-                        className="sky-cloud transition-opacity duration-(--duration-sky)"
-                        style={{
-                            top: `${cloud.top}%`,
-                            opacity: cloud.order < cloudCount ? cloud.opacity : 0,
-                            "--duration": `${cloud.duration / (isWindy ? 2.2 : 1)}s`,
-                            "--delay": `${cloud.delay}s`,
-                            "--rest": `${cloud.rest}vw`,
-                        } as CSSProperties}
-                    >
-                        <CloudShape width={cloud.width}/>
-                    </div>
-                ))}
+                {CLOUDS.map((cloud) => <Cloud key={cloud.order} cloud={cloud} show={cloud.order < cloudCount} isWindy={isWindy}/>)}
             </div>
 
             {/* Fog */}
-            <div className={cn("absolute inset-x-[-20%] bottom-0 h-2/3", fade(condition === CONDITION.FOG))}>
+            <SkyLayer show={condition === CONDITION.FOG} className="absolute inset-x-[-20%] bottom-0 h-2/3">
                 <div className="sky-fog absolute inset-x-0 bottom-[10%] h-1/2 rounded-[50%] bg-white/18 blur-3xl"/>
                 <div className="sky-fog absolute inset-x-[10%] bottom-[35%] h-1/3 rounded-[50%] bg-white/12 blur-3xl [--duration:22s]"/>
-            </div>
+            </SkyLayer>
 
             {/* Wind streaks */}
             {isWindy && (
@@ -186,9 +206,9 @@ export const SkyBackground = ({scene}: SkyBackgroundProps) => {
                 </div>
             )}
 
-            <div className={cn("absolute inset-0", fade(precipitationKind(condition) !== null))}>
+            <SkyLayer show={precipitationKind(condition) !== null} className="absolute inset-0">
                 <Precipitation kind={precipitationKind(condition)} intensity={condition === CONDITION.DRIZZLE ? 1 : Math.max(intensity, 1) as Scene["intensity"]} isStorm={isStorm}/>
-            </div>
+            </SkyLayer>
 
             {isStorm && (
                 <>

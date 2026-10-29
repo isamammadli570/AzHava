@@ -31,7 +31,14 @@ export const SunCard = ({sunrise, sunset, daylight, timezone, className, style}:
 
     return (
         <DetailCard style={style} className={className} icon={<Sunrise/>} title={t("details.sun")} caption={t("details.daylight", {hours, minutes})} info={t("details.info.sun")}>
-            <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full max-w-72 self-center overflow-visible" aria-hidden>
+            <div className="relative w-full max-w-72 self-center">
+            {/* The pulsing glow is an HTML element over the SVG: pulsing a shape inside the SVG would repaint it every frame. */}
+            <span
+                aria-hidden
+                className={cn("absolute size-7 -translate-x-1/2 -translate-y-1/2 animate-[glow-pulse_4s_ease-in-out_infinite] rounded-full bg-[#ffc857]/25 transition-opacity duration-500", isUp ? "opacity-100" : "opacity-40")}
+                style={{left: `${(sun.x / WIDTH) * 100}%`, top: `${(sun.y / HEIGHT) * 100}%`}}
+            />
+            <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="relative w-full overflow-visible" aria-hidden>
                 <defs>
                     <linearGradient id="sun-arc" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0" stopColor="#ff9f1c"/>
@@ -45,11 +52,9 @@ export const SunCard = ({sunrise, sunset, daylight, timezone, className, style}:
                 <line x1="4" x2={WIDTH - 4} y1={HORIZON} y2={HORIZON} stroke="rgb(255 255 255 / 0.25)" strokeDasharray="2 4"/>
                 <path d={ARC} fill="none" stroke="rgb(255 255 255 / 0.18)" strokeWidth="2" strokeDasharray="3 5"/>
                 <path d={ARC} fill="none" stroke="url(#sun-arc)" strokeWidth="3" strokeLinecap="round" pathLength={1} strokeDasharray={`${progress} 1`} className="transition-[stroke-dasharray] duration-1000"/>
-                <g className={cn("transition-opacity duration-500", isUp ? "opacity-100" : "opacity-40")}>
-                    <circle cx={sun.x} cy={sun.y} r="14" fill="#ffc857" opacity=".25" className="animate-[glow-pulse_4s_ease-in-out_infinite] [transform-box:fill-box] [transform-origin:center]"/>
-                    <circle cx={sun.x} cy={sun.y} r="7" fill="url(#sun-dot)"/>
-                </g>
+                <circle cx={sun.x} cy={sun.y} r="7" fill="url(#sun-dot)" className={cn("transition-opacity duration-500", isUp ? "opacity-100" : "opacity-40")}/>
             </svg>
+            </div>
             <div className="mt-2 flex justify-between gap-2 text-sm">
                 <span className="flex items-center gap-1.5">
                     <Sunrise className="size-4 text-brand" aria-hidden/>

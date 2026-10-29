@@ -8,6 +8,7 @@ import {ErrorBoundary} from "@/widgets/ErrorBoundary";
 import {Toaster} from "@/components/ui/sonner";
 import {router} from "@/router";
 import {initPwa} from "@/services/pwa";
+import {initAdaptiveQuality} from "@/services/quality";
 
 const syncDocumentLanguage = (language: string): void => {
     document.documentElement.lang = language.split("-")[0];
@@ -16,6 +17,7 @@ const syncDocumentLanguage = (language: string): void => {
 syncDocumentLanguage(i18n.resolvedLanguage ?? i18n.language);
 i18n.on("languageChanged", syncDocumentLanguage);
 initPwa();
+initAdaptiveQuality();
 
 createRoot(document.getElementById("root") as HTMLElement).render(
     <StrictMode>

@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from "react";
+import {memo, useCallback, useMemo, useState} from "react";
 import {CalendarDays} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {DAILY_RANGES, type DailyRange} from "@/constants/other";
@@ -12,7 +12,7 @@ import {staggerIndex} from "@/lib/utils";
 type DailyForecastProps = {days: DailyPoint[]; timezone: string; currentTemp: number; placeId: string};
 
 /** 7 or 16 days, every range bar on one shared scale so warm and cold days compare honestly. */
-export const DailyForecast = ({days, timezone, currentTemp, placeId}: DailyForecastProps) => {
+export const DailyForecast = memo(({days, timezone, currentTemp, placeId}: DailyForecastProps) => {
     const {t} = useTranslation("weather");
     const {locale} = useLanguage();
     const [range, setRange] = useState<DailyRange>(7);
@@ -50,4 +50,4 @@ export const DailyForecast = ({days, timezone, currentTemp, placeId}: DailyForec
             </ol>
         </Card>
     );
-};
+});

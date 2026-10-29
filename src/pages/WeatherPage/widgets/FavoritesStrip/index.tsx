@@ -31,7 +31,6 @@ export const FavoritesStrip = () => {
                         <li key={place.id} style={staggerIndex(index)}>
                             <NavLink
                                 to={placeRoute(place)}
-                                viewTransition
                                 onPointerEnter={() => prefetchForecast(place)}
                                 className={({isActive}) =>
                                     cn(

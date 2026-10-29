@@ -1,6 +1,7 @@
 import {useEffect, useRef} from "react";
 import type {Intensity} from "@/helpers/weather";
 import {useReducedMotion} from "@/hooks/useReducedMotion";
+import {isLowQuality, onQualityChange} from "@/services/quality";
 
 export type PrecipitationKind = "rain" | "snow";
 
@@ -11,9 +12,15 @@ const DENSITY: Record<PrecipitationKind, readonly number[]> = {rain: [0, 120, 22
 /** Particles share a few opacity levels, so each level is drawn as one path with one stroke/fill call. */
 const ALPHAS: Record<PrecipitationKind, readonly number[]> = {rain: [0.18, 0.3, 0.46], snow: [0.45, 0.7, 0.95]};
 
-/** Particles are tuned for a 1440 px wide screen and thinned on phones, so a small screen is not a white wall. */
+/**
+ * Particles are tuned for a 1440 px wide screen and thinned on phones, so a small screen is not a white wall;
+ * the light quality preset halves them again.
+ */
 const particleCount = (kind: PrecipitationKind, intensity: Intensity, width: number): number =>
-    Math.round(DENSITY[kind][intensity] * Math.min(1.2, Math.max(0.35, width / 1440)));
+    Math.round(DENSITY[kind][intensity] * Math.min(1.2, Math.max(0.35, width / 1440)) * (isLowQuality() ? 0.5 : 1));
+
+/** Mobile browsers fire resize when the address bar slides; a change this small is not worth rebuilding the canvas. */
+const MIN_HEIGHT_CHANGE = 160;
 
 const spawn = (kind: PrecipitationKind, width: number, height: number, anywhere: boolean): Particle => {
     const bucket = Math.floor(Math.random() * 3);
@@ -52,12 +59,17 @@ export const Precipitation = ({kind, intensity, isStorm}: PrecipitationProps) =>
         const wind = kind === "rain" ? (isStorm ? 0.32 : 0.16) : 0;
         const alphas = ALPHAS[kind];
 
-        const resize = () => {
+        const rebuild = () => {
             width = window.innerWidth;
             height = window.innerHeight;
             canvas.width = width;
             canvas.height = height;
             particles = Array.from({length: particleCount(kind, intensity, width)}, () => spawn(kind, width, height, true));
+        };
+
+        const resize = () => {
+            if (window.innerWidth === width && Math.abs(window.innerHeight - height) < MIN_HEIGHT_CHANGE) return;
+            rebuild();
         };
 
         const step = (delta: number) => {
@@ -115,16 +127,18 @@ export const Precipitation = ({kind, intensity, isStorm}: PrecipitationProps) =>
             }
         };
 
-        resize();
+        rebuild();
         if (isReduced) draw();
         else frame = requestAnimationFrame(tick);
 
         window.addEventListener("resize", resize);
         document.addEventListener("visibilitychange", onVisibility);
+        const stopQualityWatch = onQualityChange(rebuild);
         return () => {
             cancelAnimationFrame(frame);
             window.removeEventListener("resize", resize);
             document.removeEventListener("visibilitychange", onVisibility);
+            stopQualityWatch();
             context.clearRect(0, 0, width, height);
         };
     }, [kind, intensity, isStorm, isReduced]);

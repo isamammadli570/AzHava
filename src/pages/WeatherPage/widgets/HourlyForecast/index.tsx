@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent} from "react";
+import {memo, useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent} from "react";
 import {ChevronLeft, ChevronRight, Clock, Droplet, Thermometer, Wind} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {HOURLY_RANGES, type HourlyRange} from "@/constants/other";
@@ -29,7 +29,7 @@ type HourlyForecastProps = {hours: HourlyPoint[]; timezone: string; placeId: str
  * Next 24/48 hours as one scrollable strip: time, icon, a smooth temperature curve coloured by temperature, and
  * precipitation chance bars. Hover, tap or arrow keys pick an hour and open its details; night hours get a faint band.
  */
-export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) => {
+export const HourlyForecast = memo(({hours, timezone, placeId}: HourlyForecastProps) => {
     const {t} = useTranslation(["weather", "common"]);
     const {locale} = useLanguage();
     const [range, setRange] = useState<HourlyRange>(24);
@@ -156,7 +156,7 @@ export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) 
                                     <span className={index === 0 ? "text-xs font-semibold text-brand" : "text-xs font-medium text-muted-foreground tabular first-letter:uppercase"}>
                                         {timeLabel(hour, index)}
                                     </span>
-                                    <WeatherIcon code={hour.weatherCode} isDay={hour.isDay} size={32} isAnimated={index < 6 || index === activeIndex}/>
+                                    <WeatherIcon code={hour.weatherCode} isDay={hour.isDay} size={32} isAnimated={index === 0 || index === activeIndex}/>
                                     <span className="sr-only">
                                         {roundTemp(hour.temperature)}°, {t("hourly.precipitation")} {hour.precipitationProbability}%
                                     </span>
@@ -164,7 +164,16 @@ export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) 
                             ))}
                         </ol>
 
-                        <svg aria-hidden width={width} height={CHART_HEIGHT} className="relative block overflow-visible">
+                        {/* Entrance and the "now" pulse animate HTML boxes, not shapes inside the SVG, so they stay on the GPU. */}
+                        <div className="relative" style={{width, height: CHART_HEIGHT}}>
+                        {chart.points[0] && (
+                            <span
+                                aria-hidden
+                                className="absolute size-[18px] -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full bg-brand/30"
+                                style={{left: chart.points[0].x, top: chart.points[0].y}}
+                            />
+                        )}
+                        <svg aria-hidden width={width} height={CHART_HEIGHT} className="relative block animate-fade-in overflow-visible">
                             <defs>
                                 <linearGradient id={`${uid}-line`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={width} y2="0">
                                     {chart.stops.map((stop) => <stop key={stop.offset} offset={stop.offset} stopColor={stop.color}/>)}
@@ -174,13 +183,12 @@ export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) 
                                     <stop offset="1" stopColor="#ffffff" stopOpacity="0"/>
                                 </linearGradient>
                             </defs>
-                            <path d={chart.area} fill={`url(#${uid}-area)`} className="animate-fade-in [animation-delay:400ms]"/>
+                            <path d={chart.area} fill={`url(#${uid}-area)`}/>
                             <path d={chart.line} fill="none" stroke={`url(#${uid}-line)`} strokeWidth="3" strokeLinecap="round" pathLength={1} strokeDasharray="1" className="animate-draw"/>
                             {chart.points.map((point, index) => {
                                 const isActive = index === activeIndex;
                                 return (
-                                    <g key={items[index].time} className="animate-fade-in" style={{animationDelay: `${300 + index * 25}ms`}}>
-                                        {index === 0 && <circle cx={point.x} cy={point.y} r="9" fill="var(--brand)" opacity=".25" className="animate-ping [transform-box:fill-box] [transform-origin:center]"/>}
+                                    <g key={items[index].time}>
                                         <circle
                                             cx={point.x}
                                             cy={point.y}
@@ -188,7 +196,6 @@ export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) 
                                             fill={index === 0 ? "var(--brand)" : "#fff"}
                                             stroke={isActive ? temperatureColor(items[index].temperature) : "none"}
                                             strokeWidth="3"
-                                            className="transition-[r] duration-150"
                                         />
                                         <text x={point.x} y={point.y - 12} textAnchor="middle" className="fill-foreground text-[13px] font-semibold tabular">
                                             {roundTemp(items[index].temperature)}°
@@ -197,6 +204,7 @@ export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) 
                                 );
                             })}
                         </svg>
+                        </div>
 
                         <ol aria-hidden className="relative grid pb-2" style={{gridTemplateColumns: `repeat(${items.length}, ${COLUMN}px)`}}>
                             {items.map((hour, index) => (
@@ -251,4 +259,4 @@ export const HourlyForecast = ({hours, timezone, placeId}: HourlyForecastProps) 
             <p id={`${uid}-hint`} className="mt-2 text-[11px] text-subtle-foreground">{t("hourly.hint")}</p>
         </Card>
     );
-};
+});

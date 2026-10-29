@@ -18,7 +18,7 @@ export const RouteErrorPage = () => {
                 description={t("notFound.description")}
                 action={
                     <Button asChild variant="brand">
-                        <Link to={buildRoute.city(DEFAULT_CITY_ID)} viewTransition>{t("notFound.back")}</Link>
+                        <Link to={buildRoute.city(DEFAULT_CITY_ID)}>{t("notFound.back")}</Link>
                     </Button>
                 }
             />

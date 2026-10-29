@@ -6,6 +6,7 @@ import {DEFAULT_SCENE, isSameScene, type Scene} from "@/helpers/weather";
 import {useOnlineStatus} from "@/hooks/useOnlineStatus";
 import {useSpotlight} from "@/hooks/useSpotlight";
 import {SkyBackground} from "@/widgets/SkyBackground";
+import {WeatherIconDefs} from "@/widgets/WeatherIcon";
 import {Header} from "@/layout/MainLayout/Header";
 import {Footer} from "@/layout/MainLayout/Footer";
 import type {LayoutContext} from "@/layout/MainLayout/sceneContext";
@@ -25,6 +26,7 @@ export const MainLayout = () => {
     return (
         <>
             <SkyBackground scene={scene}/>
+            <WeatherIconDefs/>
             <a href="#main" className="sr-only z-50 rounded-full bg-brand px-4 py-2 text-brand-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
                 {t("skipToContent")}
             </a>

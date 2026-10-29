@@ -59,7 +59,7 @@ export const CurrentHero = ({place, current, today, yesterday, hours, timezone, 
             <div key={place.id} className="relative animate-fade-up">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        <h1 id="hero-title" className="flex items-center gap-2 font-display text-3xl font-bold tracking-tight text-shadow-soft [view-transition-name:place-title] sm:text-4xl">
+                        <h1 id="hero-title" className="flex items-center gap-2 font-display text-3xl font-bold tracking-tight text-shadow-soft sm:text-4xl">
                             <MapPin className="size-6 shrink-0 text-brand sm:size-7" aria-hidden/>
                             <span className="truncate">{placeName(place)}</span>
                         </h1>

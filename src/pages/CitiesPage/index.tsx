@@ -8,6 +8,7 @@ import {useGetCurrentBatch, usePrefetchForecast} from "@/hooks/forecast";
 import {useFavorites} from "@/hooks/useFavorites";
 import {useLanguage} from "@/hooks/useLanguage";
 import {useNow} from "@/hooks/useNow";
+import {useRenderStages} from "@/hooks/useRenderStages";
 import {usePlaceLabel} from "@/hooks/usePlaceLabel";
 import {useLayoutScene} from "@/layout/MainLayout/sceneContext";
 import {PageTitle} from "@/widgets/PageTitle";
@@ -44,10 +45,12 @@ export const CitiesPage = () => {
         document.title = `${t("citiesPage.title")} · ${t("common:appName")}`;
     }, [t]);
 
+    // The world section (below the first screen) is added a painted frame later, so opening the page is one short frame.
+    const stage = useRenderStages(2);
     const sections = [
         {id: "favorites", title: t("common:favorites.title"), places: favorites},
         {id: "az", title: t("citiesPage.azerbaijan"), places: AZ_PLACES},
-        {id: "world", title: t("citiesPage.world"), places: WORLD_PLACES},
+        {id: "world", title: t("citiesPage.world"), places: stage >= 2 ? WORLD_PLACES : []},
     ].filter((section) => section.places.length > 0);
 
     return (

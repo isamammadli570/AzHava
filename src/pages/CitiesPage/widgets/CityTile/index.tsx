@@ -38,7 +38,6 @@ export const CityTile = memo(({place, name, country, snapshot, now, locale, onIn
         <li style={style}>
             <Link
                 to={placeRoute(place)}
-                viewTransition
                 onPointerEnter={showIntent}
                 onFocus={showIntent}
                 className="spotlight group flex h-full min-h-40 flex-col overflow-hidden rounded-3xl border border-glass-border p-4 shadow-[0_18px_40px_-24px_rgb(0_0_0/0.7)] transition-[translate,box-shadow,scale] duration-(--duration-base) ease-(--ease-out) hover:-translate-y-1.5 hover:shadow-[0_28px_50px_-20px_rgb(0_0_0/0.7)] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"

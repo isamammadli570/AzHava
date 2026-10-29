@@ -25,7 +25,7 @@ export const useGeolocation = () => {
                 setIsLocating(false);
                 const city = matchingCity(coords, CITY_RADIUS_KM);
                 const place = city ? placeFromCity(city) : placeFromCoordinates(coords.latitude, coords.longitude, t("search.myLocation"));
-                void navigate(placeRoute(place), {viewTransition: true});
+                void navigate(placeRoute(place));
             },
             () => {
                 setIsLocating(false);

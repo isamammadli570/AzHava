@@ -85,7 +85,7 @@ export const PlaceSearch = ({className}: PlaceSearchProps) => {
         setTerm("");
         setIsOpen(false);
         inputRef.current?.blur();
-        void navigate(placeRoute(place), {viewTransition: true});
+        void navigate(placeRoute(place));
     };
 
     const moveActive = (step: number) => {
