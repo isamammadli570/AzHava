@@ -1,0 +1,74 @@
+{
+    "appName": "AzHava",
+    "tagline": "Live weather for Azerbaijan",
+    "skipToContent": "Skip to content",
+    "nav": {
+        "weather": "Weather",
+        "cities": "Cities",
+        "home": "Home"
+    },
+    "search": {
+        "label": "Search city",
+        "placeholder": "Search a city or place…",
+        "builtIn": "Cities",
+        "results": "Worldwide",
+        "loading": "Searching…",
+        "empty": "Nothing found",
+        "hint": "Type at least 2 letters",
+        "clear": "Clear search",
+        "myLocation": "My location",
+        "locate": "Use my location",
+        "locating": "Finding you…",
+        "locationDenied": "Location access was not allowed",
+        "recent": "Recently viewed"
+    },
+    "language": "Language",
+    "favorites": {
+        "title": "Favourites",
+        "add": "Add to favourites",
+        "remove": "Remove from favourites",
+        "added": "{{name}} added to favourites",
+        "removed": "{{name}} removed from favourites",
+        "empty": "Tap the star to keep a city here"
+    },
+    "now": "Now",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "loading": "Loading…",
+    "updated": "Updated {{time}}",
+    "retry": "Try again",
+    "error": "Something went wrong",
+    "errors": {
+        "load": "Could not load data",
+        "network": "Check your internet connection",
+        "forecast": "Could not load the forecast",
+        "airQuality": "Could not load air quality",
+        "search": "Search failed"
+    },
+    "notFound": {
+        "title": "Page not found",
+        "description": "The address may be wrong, or the city is no longer listed.",
+        "back": "Back to Baku weather"
+    },
+    "footer": {
+        "data": "Weather data",
+        "portfolio": "Portfolio project"
+    },
+    "offline": "You are offline — showing the last loaded data",
+    "updatedJustNow": "Updated just now",
+    "updatedAgo": "Updated {{count}} min ago",
+    "refresh": "Refresh",
+    "about": "What is this?",
+    "install": {
+        "button": "Install app",
+        "done": "AzHava is installed",
+        "iosTitle": "Install on iPhone",
+        "iosStep1": "Tap «Share» in Safari",
+        "iosStep2": "Choose «Add to Home Screen»"
+    },
+    "update": {
+        "ready": "A new version is ready",
+        "reload": "Reload"
+    },
+    "lastData": "Last data: {{time}}"
+}

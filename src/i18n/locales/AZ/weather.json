@@ -1,0 +1,204 @@
+{
+    "codes": {
+        "0": "Açıq səma",
+        "1": "Əsasən açıq",
+        "2": "Qismən buludlu",
+        "3": "Tutqun",
+        "45": "Duman",
+        "48": "Qırovlu duman",
+        "51": "Zəif çiskin",
+        "53": "Çiskin",
+        "55": "Güclü çiskin",
+        "56": "Zəif dondurucu çiskin",
+        "57": "Dondurucu çiskin",
+        "61": "Zəif yağış",
+        "63": "Yağış",
+        "65": "Güclü yağış",
+        "66": "Zəif dondurucu yağış",
+        "67": "Dondurucu yağış",
+        "71": "Zəif qar",
+        "73": "Qar",
+        "75": "Güclü qar",
+        "77": "Qar dənələri",
+        "80": "Zəif leysan",
+        "81": "Leysan",
+        "82": "Şiddətli leysan",
+        "85": "Zəif qar sağanağı",
+        "86": "Güclü qar sağanağı",
+        "95": "İldırımlı yağış",
+        "96": "Dolu ilə ildırım",
+        "99": "Güclü dolu ilə ildırım"
+    },
+    "conditions": {
+        "clear": "Açıq",
+        "partlyCloudy": "Qismən buludlu",
+        "cloudy": "Buludlu",
+        "fog": "Duman",
+        "drizzle": "Çiskin",
+        "rain": "Yağış",
+        "snow": "Qar",
+        "thunder": "İldırım"
+    },
+    "hero": {
+        "feelsLike": "Hiss olunur {{temp}}",
+        "high": "Maks. {{temp}}",
+        "low": "Min. {{temp}}",
+        "localTime": "Yerli vaxt {{time}}",
+        "precipAt": "Saat {{time}} üçün yağıntı ehtimalı {{chance}}%",
+        "dry": "Növbəti 12 saatda yağıntı gözlənilmir",
+        "yesterday": {
+            "same": "Dünənki kimi",
+            "warmer": "Dünəndən {{delta}}° isti",
+            "colder": "Dünəndən {{delta}}° sərin"
+        }
+    },
+    "hourly": {
+        "title": "Saatlıq proqnoz",
+        "range": "{{count}} saat",
+        "chartLabel": "Növbəti {{count}} saat üçün temperatur və yağıntı ehtimalı",
+        "precipitation": "Yağıntı ehtimalı",
+        "previous": "Əvvəlki saatlar",
+        "next": "Növbəti saatlar",
+        "feelsLike": "Hiss olunur",
+        "wind": "Külək",
+        "hint": "Ətraflı görmək üçün saatın üzərinə gəlin və ya toxunun"
+    },
+    "daily": {
+        "title": "Günlük proqnoz",
+        "range": "{{count}} gün",
+        "listLabel": "{{count}} günlük proqnoz",
+        "precipitation": "Yağıntı",
+        "wind": "Külək",
+        "uv": "UV maks.",
+        "sunrise": "Gün çıxır",
+        "sunset": "Gün batır",
+        "toggle": "{{day}} üçün ətraflı"
+    },
+    "details": {
+        "title": "Ətraflı",
+        "feelsLike": "Hiss olunan",
+        "feelsSame": "Faktiki temperatura yaxındır",
+        "feelsWarmer": "Faktikidən daha isti hiss olunur",
+        "feelsColder": "Faktikidən daha soyuq hiss olunur",
+        "humidity": "Rütubət",
+        "dewPoint": "Şeh nöqtəsi {{temp}}",
+        "wind": "Külək",
+        "kmh": "km/s",
+        "gusts": "Şiddətli zərbələr {{speed}} km/s",
+        "from": "{{direction}} küləyi",
+        "pressure": "Təzyiq",
+        "hpa": "hPa",
+        "pressureLevels": {
+            "low": "Aşağı təzyiq",
+            "normal": "Normal təzyiq",
+            "high": "Yüksək təzyiq"
+        },
+        "uv": "UV indeksi",
+        "uvLevels": {
+            "low": "Aşağı",
+            "moderate": "Orta",
+            "high": "Yüksək",
+            "veryHigh": "Çox yüksək",
+            "extreme": "Ekstremal"
+        },
+        "uvAdvice": {
+            "low": "Qorunmaya ehtiyac yoxdur",
+            "moderate": "Günorta saatlarında kölgədə olun",
+            "high": "Günəş kremi və papaq vacibdir",
+            "veryHigh": "Günortadan qaçın, qorunun",
+            "extreme": "Açıq havada qalmayın"
+        },
+        "precipitation": "Yağıntı",
+        "next24h": "Növbəti 24 saatda",
+        "mm": "mm",
+        "chance": "Bu gün ehtimal {{chance}}%",
+        "sun": "Günəş",
+        "sunrise": "Gün çıxır",
+        "sunset": "Gün batır",
+        "daylight": "Gündüz {{hours}} saat {{minutes}} dəq",
+        "visibility": "Görünmə",
+        "km": "km",
+        "visibilityLevels": {
+            "clear": "Aydın görünüş",
+            "moderate": "Orta görünüş",
+            "poor": "Zəif görünüş"
+        },
+        "info": {
+            "feelsLike": "Külək və rütubət nəzərə alınmaqla bədənin hiss etdiyi temperatur.",
+            "humidity": "Havadakı su buxarının miqdarı. Şeh nöqtəsi nə qədər yüksəkdirsə, hava bir o qədər bürkülü hiss olunur.",
+            "wind": "Küləyin 10 metr hündürlükdəki orta sürəti. Ox küləyin əsdiyi istiqaməti göstərir.",
+            "pressure": "Dəniz səviyyəsinə gətirilmiş atmosfer təzyiqi. Təzyiqin düşməsi çox vaxt yağıntıdan xəbər verir.",
+            "uv": "Günəşin ultrabənövşəyi şüalarının gücü. 6 və daha yuxarı olanda dəri tez yanır.",
+            "precipitation": "Növbəti 24 saatda gözlənilən yağıntının miqdarı. Zolaqlar hər saat üçün ehtimalı göstərir.",
+            "sun": "Gün çıxması və batması. Günəş qövs üzrə indiki mövqeyində göstərilir.",
+            "visibility": "Uzağı nə qədər aydın görmək mümkündür. Duman və yağıntı görünməni azaldır.",
+            "air": "Avropa hava keyfiyyəti indeksi (0–100+). Aşağı rəqəm daha təmiz hava deməkdir."
+        }
+    },
+    "air": {
+        "title": "Hava keyfiyyəti",
+        "scale": "Avropa AQI",
+        "unit": "µg/m³",
+        "unavailable": "Bu məkan üçün hava keyfiyyəti məlumatı yoxdur",
+        "levels": {
+            "good": "Yaxşı",
+            "fair": "Qənaətbəxş",
+            "moderate": "Orta",
+            "poor": "Pis",
+            "veryPoor": "Çox pis",
+            "extremelyPoor": "Son dərəcə pis"
+        },
+        "advice": {
+            "good": "Açıq havada fəaliyyət üçün ideal gündür",
+            "fair": "Hava təmizdir, narahatlığa əsas yoxdur",
+            "moderate": "Həssas insanlar uzun gəzintiləri azaltsın",
+            "poor": "Açıq havada ağır fəaliyyəti azaldın",
+            "veryPoor": "Mümkünsə qapalı məkanda qalın",
+            "extremelyPoor": "Açıq havaya çıxmayın"
+        },
+        "pollutants": {
+            "pm2_5": "PM2.5",
+            "pm10": "PM10",
+            "ozone": "O₃",
+            "nitrogen_dioxide": "NO₂",
+            "sulphur_dioxide": "SO₂",
+            "carbon_monoxide": "CO"
+        }
+    },
+    "compass": {
+        "N": "Şimal",
+        "NE": "Şimal-şərq",
+        "E": "Şərq",
+        "SE": "Cənub-şərq",
+        "S": "Cənub",
+        "SW": "Cənub-qərb",
+        "W": "Qərb",
+        "NW": "Şimal-qərb"
+    },
+    "compassShort": {
+        "N": "Ş",
+        "E": "Şq",
+        "S": "C",
+        "W": "Q"
+    },
+    "citiesPage": {
+        "title": "Şəhərlər",
+        "description": "Azərbaycanın və dünyanın şəhərlərində hava indi necədir",
+        "azerbaijan": "Azərbaycan",
+        "world": "Dünya"
+    },
+    "advice": {
+        "title": "Bu gün üçün tövsiyələr",
+        "umbrella": "Çətir götürün — yağış ehtimalı yüksəkdir",
+        "sunscreen": "Günəş kremi sürtün — UV yüksək olacaq",
+        "bundleUp": "İsti geyinin — çöldə çox soyuqdur",
+        "jacket": "Yüngül gödəkçə götürün",
+        "heat": "Çox isti olacaq — su için, kölgədə qalın",
+        "wind": "Güclü külək — ehtiyatlı olun",
+        "fog": "Duman var — yolda ehtiyatlı olun",
+        "ice": "Yollar buz bağlaya bilər",
+        "air": "Hava çirklidir — çöldə az qalın",
+        "storm": "İldırım gözlənilir — açıq yerdə qalmayın",
+        "niceDay": "Gəzinti üçün gözəl hava"
+    }
+}

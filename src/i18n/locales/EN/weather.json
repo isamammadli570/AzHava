@@ -1,0 +1,204 @@
+{
+    "codes": {
+        "0": "Clear sky",
+        "1": "Mainly clear",
+        "2": "Partly cloudy",
+        "3": "Overcast",
+        "45": "Fog",
+        "48": "Rime fog",
+        "51": "Light drizzle",
+        "53": "Drizzle",
+        "55": "Dense drizzle",
+        "56": "Light freezing drizzle",
+        "57": "Freezing drizzle",
+        "61": "Light rain",
+        "63": "Rain",
+        "65": "Heavy rain",
+        "66": "Light freezing rain",
+        "67": "Freezing rain",
+        "71": "Light snow",
+        "73": "Snow",
+        "75": "Heavy snow",
+        "77": "Snow grains",
+        "80": "Light showers",
+        "81": "Showers",
+        "82": "Violent showers",
+        "85": "Light snow showers",
+        "86": "Heavy snow showers",
+        "95": "Thunderstorm",
+        "96": "Thunderstorm with hail",
+        "99": "Thunderstorm with heavy hail"
+    },
+    "conditions": {
+        "clear": "Clear",
+        "partlyCloudy": "Partly cloudy",
+        "cloudy": "Cloudy",
+        "fog": "Fog",
+        "drizzle": "Drizzle",
+        "rain": "Rain",
+        "snow": "Snow",
+        "thunder": "Thunderstorm"
+    },
+    "hero": {
+        "feelsLike": "Feels like {{temp}}",
+        "high": "H {{temp}}",
+        "low": "L {{temp}}",
+        "localTime": "Local time {{time}}",
+        "precipAt": "{{chance}}% chance of precipitation around {{time}}",
+        "dry": "No precipitation expected in the next 12 hours",
+        "yesterday": {
+            "same": "Same as yesterday",
+            "warmer": "{{delta}}° warmer than yesterday",
+            "colder": "{{delta}}° cooler than yesterday"
+        }
+    },
+    "hourly": {
+        "title": "Hourly forecast",
+        "range": "{{count}} h",
+        "chartLabel": "Temperature and chance of precipitation for the next {{count}} hours",
+        "precipitation": "Chance of precipitation",
+        "previous": "Earlier hours",
+        "next": "Later hours",
+        "feelsLike": "Feels like",
+        "wind": "Wind",
+        "hint": "Hover or tap an hour for details"
+    },
+    "daily": {
+        "title": "Daily forecast",
+        "range": "{{count}} days",
+        "listLabel": "{{count}}-day forecast",
+        "precipitation": "Precipitation",
+        "wind": "Wind",
+        "uv": "Max UV",
+        "sunrise": "Sunrise",
+        "sunset": "Sunset",
+        "toggle": "Details for {{day}}"
+    },
+    "details": {
+        "title": "Details",
+        "feelsLike": "Feels like",
+        "feelsSame": "Close to the actual temperature",
+        "feelsWarmer": "Feels warmer than it is",
+        "feelsColder": "Feels colder than it is",
+        "humidity": "Humidity",
+        "dewPoint": "Dew point {{temp}}",
+        "wind": "Wind",
+        "kmh": "km/h",
+        "gusts": "Gusts up to {{speed}} km/h",
+        "from": "From the {{direction}}",
+        "pressure": "Pressure",
+        "hpa": "hPa",
+        "pressureLevels": {
+            "low": "Low pressure",
+            "normal": "Normal pressure",
+            "high": "High pressure"
+        },
+        "uv": "UV index",
+        "uvLevels": {
+            "low": "Low",
+            "moderate": "Moderate",
+            "high": "High",
+            "veryHigh": "Very high",
+            "extreme": "Extreme"
+        },
+        "uvAdvice": {
+            "low": "No protection needed",
+            "moderate": "Seek shade around midday",
+            "high": "Sunscreen and a hat are a must",
+            "veryHigh": "Avoid the midday sun",
+            "extreme": "Stay indoors if you can"
+        },
+        "precipitation": "Precipitation",
+        "next24h": "In the next 24 h",
+        "mm": "mm",
+        "chance": "{{chance}}% chance today",
+        "sun": "Sun",
+        "sunrise": "Sunrise",
+        "sunset": "Sunset",
+        "daylight": "{{hours}} h {{minutes}} min of daylight",
+        "visibility": "Visibility",
+        "km": "km",
+        "visibilityLevels": {
+            "clear": "Perfectly clear",
+            "moderate": "Moderate visibility",
+            "poor": "Poor visibility"
+        },
+        "info": {
+            "feelsLike": "How warm or cold it feels to the body, taking wind and humidity into account.",
+            "humidity": "How much water vapour the air holds. The higher the dew point, the muggier it feels.",
+            "wind": "Average wind speed at 10 m. The arrow shows where the wind is blowing to.",
+            "pressure": "Air pressure reduced to sea level. Falling pressure often means rain is coming.",
+            "uv": "Strength of the sun's ultraviolet rays. From 6 up, skin burns quickly.",
+            "precipitation": "Rain or snow expected over the next 24 hours. The bars show the chance for each hour.",
+            "sun": "Sunrise and sunset, with the sun drawn where it is on its path right now.",
+            "visibility": "How far you can see clearly. Fog and rain bring it down.",
+            "air": "European Air Quality Index (0–100+). Lower means cleaner air."
+        }
+    },
+    "air": {
+        "title": "Air quality",
+        "scale": "European AQI",
+        "unit": "µg/m³",
+        "unavailable": "No air quality data for this place",
+        "levels": {
+            "good": "Good",
+            "fair": "Fair",
+            "moderate": "Moderate",
+            "poor": "Poor",
+            "veryPoor": "Very poor",
+            "extremelyPoor": "Extremely poor"
+        },
+        "advice": {
+            "good": "A great day to be outside",
+            "fair": "Air is clean, nothing to worry about",
+            "moderate": "Sensitive people should shorten long walks",
+            "poor": "Cut down on strenuous outdoor activity",
+            "veryPoor": "Stay indoors if possible",
+            "extremelyPoor": "Avoid going outside"
+        },
+        "pollutants": {
+            "pm2_5": "PM2.5",
+            "pm10": "PM10",
+            "ozone": "O₃",
+            "nitrogen_dioxide": "NO₂",
+            "sulphur_dioxide": "SO₂",
+            "carbon_monoxide": "CO"
+        }
+    },
+    "compass": {
+        "N": "north",
+        "NE": "northeast",
+        "E": "east",
+        "SE": "southeast",
+        "S": "south",
+        "SW": "southwest",
+        "W": "west",
+        "NW": "northwest"
+    },
+    "compassShort": {
+        "N": "N",
+        "E": "E",
+        "S": "S",
+        "W": "W"
+    },
+    "citiesPage": {
+        "title": "Cities",
+        "description": "What the weather is doing right now across Azerbaijan and the world",
+        "azerbaijan": "Azerbaijan",
+        "world": "World"
+    },
+    "advice": {
+        "title": "Tips for today",
+        "umbrella": "Take an umbrella — rain is likely",
+        "sunscreen": "Wear sunscreen — UV will be high",
+        "bundleUp": "Bundle up — it is very cold out",
+        "jacket": "Bring a light jacket",
+        "heat": "Very hot — drink water and stay in the shade",
+        "wind": "Strong wind — take care",
+        "fog": "Fog — drive carefully",
+        "ice": "Roads may be icy",
+        "air": "Poor air — limit time outside",
+        "storm": "Thunderstorms expected — avoid open spaces",
+        "niceDay": "Lovely weather for a walk"
+    }
+}

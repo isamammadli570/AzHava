@@ -1,0 +1,74 @@
+{
+    "appName": "AzHava",
+    "tagline": "Azərbaycanın canlı hava proqnozu",
+    "skipToContent": "Əsas məzmuna keç",
+    "nav": {
+        "weather": "Hava",
+        "cities": "Şəhərlər",
+        "home": "Ana səhifə"
+    },
+    "search": {
+        "label": "Şəhər axtar",
+        "placeholder": "Şəhər və ya məkan axtar…",
+        "builtIn": "Şəhərlər",
+        "results": "Dünya üzrə",
+        "loading": "Axtarılır…",
+        "empty": "Heç nə tapılmadı",
+        "hint": "Ən azı 2 hərf yazın",
+        "clear": "Axtarışı təmizlə",
+        "myLocation": "Mənim yerim",
+        "locate": "Yerimi tap",
+        "locating": "Yeriniz təyin olunur…",
+        "locationDenied": "Yer məlumatına icazə verilmədi",
+        "recent": "Son baxılanlar"
+    },
+    "language": "Dil",
+    "favorites": {
+        "title": "Sevimlilər",
+        "add": "Sevimlilərə əlavə et",
+        "remove": "Sevimlilərdən çıxar",
+        "added": "{{name}} sevimlilərə əlavə olundu",
+        "removed": "{{name}} sevimlilərdən çıxarıldı",
+        "empty": "Şəhəri sevimlilərə əlavə etmək üçün ulduz işarəsinə toxunun"
+    },
+    "now": "İndi",
+    "today": "Bu gün",
+    "tomorrow": "Sabah",
+    "loading": "Yüklənir…",
+    "updated": "{{time}} yeniləndi",
+    "retry": "Yenidən cəhd et",
+    "error": "Nəsə xəta baş verdi",
+    "errors": {
+        "load": "Məlumat yüklənmədi",
+        "network": "İnternet bağlantısını yoxlayın",
+        "forecast": "Proqnoz yüklənmədi",
+        "airQuality": "Hava keyfiyyəti yüklənmədi",
+        "search": "Axtarış alınmadı"
+    },
+    "notFound": {
+        "title": "Belə səhifə yoxdur",
+        "description": "Ünvan səhv ola bilər və ya şəhər siyahıdan çıxarılıb.",
+        "back": "Bakının havasına qayıt"
+    },
+    "footer": {
+        "data": "Hava məlumatları",
+        "portfolio": "Portfolio layihəsi"
+    },
+    "offline": "İnternet bağlantısı yoxdur — son yüklənən məlumat göstərilir",
+    "updatedJustNow": "İndicə yeniləndi",
+    "updatedAgo": "{{count}} dəq əvvəl yeniləndi",
+    "refresh": "Yenilə",
+    "about": "Bu nədir?",
+    "install": {
+        "button": "Tətbiqi quraşdır",
+        "done": "AzHava telefonunuza quraşdırıldı",
+        "iosTitle": "iPhone-a quraşdırmaq",
+        "iosStep1": "Safari-də «Paylaş» düyməsinə toxunun",
+        "iosStep2": "«Ana ekrana əlavə et» seçin"
+    },
+    "update": {
+        "ready": "Yeni versiya hazırdır",
+        "reload": "Yenilə"
+    },
+    "lastData": "Son məlumat: {{time}}"
+}
