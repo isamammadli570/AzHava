@@ -52,7 +52,7 @@
     },
     "footer": {
         "data": "Weather data",
-        "portfolio": "Portfolio project"
+        "madeBy": "Made by"
     },
     "offline": "You are offline — showing the last loaded data",
     "updatedJustNow": "Updated just now",

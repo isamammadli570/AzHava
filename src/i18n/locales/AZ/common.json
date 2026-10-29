@@ -52,7 +52,7 @@
     },
     "footer": {
         "data": "Hava məlumatları",
-        "portfolio": "Portfolio layihəsi"
+        "madeBy": "Hazırladı:"
     },
     "offline": "İnternet bağlantısı yoxdur — son yüklənən məlumat göstərilir",
     "updatedJustNow": "İndicə yeniləndi",

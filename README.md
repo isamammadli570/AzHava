@@ -1,6 +1,6 @@
 # AzHava
 
-Live weather for Azerbaijan, with a sky that changes with the weather. Portfolio project.
+Live weather for Azerbaijan, with a sky that changes with the weather. A portfolio project by **İsa.M**.
 
 **🌤 Live: [az-hava.vercel.app](https://az-hava.vercel.app)** — open it on your phone and press "Install app" to add it to your home screen.
 
