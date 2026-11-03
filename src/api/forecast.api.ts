@@ -142,3 +142,29 @@ export const getCurrentBatch = async (places: Coordinates[]): Promise<CurrentSna
     // A single location comes back as an object, several as an array.
     return Array.isArray(data) ? data : [data];
 };
+
+/** Current temperature and wind at one point of the map grid. */
+export type GridPoint = {latitude: number; longitude: number; temperature: number; windSpeed: number; windDirection: number};
+
+type GridResponse = {latitude: number; longitude: number; current: {temperature_2m: number; wind_speed_10m: number; wind_direction_10m: number}};
+
+/** Current temperature and wind at many points in one request, for the temperature and wind layers of the map. */
+export const getGridWeather = async (points: Coordinates[]): Promise<GridPoint[]> => {
+    if (points.length === 0) return [];
+    const data = await api.get<GridResponse | GridResponse[]>("forecast", FORECAST, {
+        params: {
+            ...BASE_PARAMS,
+            latitude: points.map((point) => point.latitude.toFixed(2)).join(","),
+            longitude: points.map((point) => point.longitude.toFixed(2)).join(","),
+            current: "temperature_2m,wind_speed_10m,wind_direction_10m",
+        },
+    });
+    // Answers come in the order asked; the requested position is kept (Open-Meteo snaps to its own grid).
+    return (Array.isArray(data) ? data : [data]).map((item, index) => ({
+        latitude: points[index].latitude,
+        longitude: points[index].longitude,
+        temperature: item.current.temperature_2m,
+        windSpeed: item.current.wind_speed_10m,
+        windDirection: item.current.wind_direction_10m,
+    }));
+};

@@ -19,5 +19,11 @@ export const getRadarFrames = async (): Promise<RadarFrames> => {
     }
 };
 
-/** Tile URL of one radar frame: 256 px tiles, colour scheme 2 ("universal blue"), smoothed, snow shown. */
-export const radarTileUrl = (host: string, frame: RadarFrame): string => `${host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`;
+/** RainViewer colour scheme 8 ("Dark Sky"): light blue through purple and red to yellow, the palette iOS Weather uses. */
+const COLOR_SCHEME = 8;
+
+/** Tile URL of one radar frame: 256 px tiles, the Dark Sky colours, smoothed, snow shown. */
+export const radarTileUrl = (host: string, frame: RadarFrame): string => `${host}${frame.path}/256/{z}/{x}/{y}/${COLOR_SCHEME}/1_1.png`;
+
+/** The radar legend, light to extreme, matching the Dark Sky colours of the tiles. */
+export const RADAR_GRADIENT = ["#4a8dff", "#5f63ff", "#9b4dff", "#e2479b", "#ff7a3d", "#ffd84a"];

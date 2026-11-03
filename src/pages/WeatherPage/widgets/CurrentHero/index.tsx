@@ -108,6 +108,7 @@ export const CurrentHero = ({place, current, today, yesterday, timezone, updated
                     isDay={isDay}
                     intensity={intensityFromCode(current.weather_code)}
                     isWindy={current.wind_speed_10m >= WINDY_KMH}
+                    time={current.time}
                     className="absolute top-[3rem] right-[-7%] w-[66%] animate-[appear_1.2s_var(--ease-out)] sm:top-6 sm:right-[4%] sm:w-[36%] lg:top-[-1rem] lg:right-[12%] lg:w-[25%]"
                 />
             </div>

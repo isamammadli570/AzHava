@@ -1,7 +1,7 @@
-import {useState, type ReactNode} from "react";
-import {CloudSun, Droplets, Eye, Gauge, Moon, Sunrise, SunMedium, Wind} from "lucide-react";
+import {lazy, Suspense, useState, type ReactNode} from "react";
+import {CloudSun, Droplets, Eye, Gauge, Moon, Sunrise, SunMedium, Umbrella, Wind} from "lucide-react";
 import {useTranslation} from "react-i18next";
-import {DETAIL_DAYS} from "@/api/forecast.api";
+import {DETAIL_DAYS, type CurrentWeather} from "@/api/forecast.api";
 import {ERRORS} from "@/constants/errors";
 import {formatWeekday, localDateKey} from "@/helpers/dates";
 import {hoursOfDay} from "@/helpers/detail";
@@ -31,18 +31,22 @@ const HEADERS: Record<SheetKind, {icon: ReactNode; title: string}> = {
     humidity: {icon: <Droplets/>, title: "details.humidity"},
     visibility: {icon: <Eye/>, title: "details.visibility"},
     pressure: {icon: <Gauge/>, title: "details.pressure"},
+    radar: {icon: <Umbrella/>, title: "radar.mapTitle"},
 };
+
+/** The full map comes with the map library, loaded only when it is opened. */
+const RadarExplorer = lazy(() => import("@/pages/WeatherPage/widgets/RadarExplorer"));
 
 /** Sheets that read the hour-by-hour detail (the moon and sun sheets are computed on the spot). */
 const NEEDS_HOURS: ReadonlySet<SheetKind> = new Set(["conditions", "wind", "uv", "humidity", "visibility", "pressure"]);
 
-type DetailSheetHostProps = {place: Place; daily: DailyPoint[]; yesterday: DailyPoint | null; timezone: string; utcOffset: number};
+type DetailSheetHostProps = {place: Place; current: CurrentWeather; daily: DailyPoint[]; yesterday: DailyPoint | null; timezone: string; utcOffset: number};
 
 /**
  * Shows whichever detail sheet the address asks for. The last sheet stays rendered while the closing animation runs,
  * and the hourly detail is fetched only once a sheet that needs it opens.
  */
-export const DetailSheetHost = ({place, daily, yesterday, timezone, utcOffset}: DetailSheetHostProps) => {
+export const DetailSheetHost = ({place, current, daily, yesterday, timezone, utcOffset}: DetailSheetHostProps) => {
     const {t} = useTranslation("weather");
     const {locale} = useLanguage();
     const {sheet, day, mode, setDay, setMode, close} = useDetailSheet();
@@ -53,6 +57,13 @@ export const DetailSheetHost = ({place, daily, yesterday, timezone, utcOffset}: 
     const detail = useGetHourlyDetail(place, kind !== null && NEEDS_HOURS.has(kind));
 
     if (!kind) return null;
+    if (kind === "radar") {
+        return (
+            <Suspense fallback={null}>
+                <RadarExplorer open={sheet !== null} onClose={close} place={place} current={current} timezone={timezone}/>
+            </Suspense>
+        );
+    }
 
     const days = daily.slice(0, DETAIL_DAYS);
     const dayIndex = clamp(day, 0, Math.max(0, days.length - 1));

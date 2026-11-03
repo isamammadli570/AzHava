@@ -39,9 +39,9 @@ const SMOKE = Array.from({length: 7}, (_, index) => {
     };
 });
 
-const PARTICLES = Array.from({length: 14}, () => ({
+const PARTICLES = Array.from({length: 9}, () => ({
     left: random() * 100,
-    size: 0.7 + random() * 0.8,
+    size: 0.55 + random() * 0.5,
     duration: 14 + random() * 14,
     delay: -random() * 28,
 }));

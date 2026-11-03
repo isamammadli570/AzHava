@@ -266,7 +266,30 @@
         "ago": "{{minutes}} min ago",
         "loading": "Loading radar…",
         "unavailable": "Radar data is not available right now",
-        "hint": "Precipitation over the last 2 hours, in 10-minute steps"
+        "hint": "Precipitation over the last 2 hours, in 10-minute steps",
+        "open": "Open the map",
+        "mapTitle": "Weather map",
+        "done": "Done",
+        "locate": "My location",
+        "places": "My places",
+        "layers": "Map layers",
+        "layer": {
+            "precipitation": "Precipitation",
+            "temperature": "Temperature",
+            "wind": "Wind"
+        },
+        "levels": {
+            "extreme": "Extreme",
+            "heavy": "Heavy",
+            "moderate": "Moderate",
+            "light": "Light"
+        },
+        "past2h": "Precipitation, last 2 hours",
+        "timeline": "Radar time",
+        "currentLayer": {
+            "temperature": "Current temperature",
+            "wind": "Current wind"
+        }
     },
     "compassAbbr": {
         "N": "N",

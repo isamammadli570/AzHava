@@ -5,6 +5,7 @@ export const QUERY_KEYS = {
     GEOCODING: "geocoding",
     RADAR: "radar",
     HOURLY_DETAIL: "hourly-detail",
+    GRID: "grid-weather",
 } as const;
 
 /** Forecast data changes every 15 minutes upstream; refetching more often only burns the free quota. */

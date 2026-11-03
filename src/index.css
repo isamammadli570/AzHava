@@ -480,30 +480,30 @@
     width: 4px;
     height: 4px;
     border-radius: 9999px;
-    background: rgb(235 244 255 / 0.75);
-    box-shadow: 0 0 6px rgb(var(--tint) / 0.7);
+    background: rgb(235 244 255 / 0.45);
+    box-shadow: 0 0 6px rgb(var(--tint) / 0.4);
 }
 
 .sky-particle-spring {
     width: 11px;
     height: 7px;
     border-radius: 70% 0 70% 0;
-    background: linear-gradient(135deg, rgb(255 222 234 / 0.75), rgb(var(--tint) / 0.45));
+    background: linear-gradient(135deg, rgb(255 222 234 / 0.45), rgb(var(--tint) / 0.25));
 }
 
 .sky-particle-summer {
     width: 5px;
     height: 5px;
     border-radius: 9999px;
-    background: rgb(var(--tint));
-    box-shadow: 0 0 10px 2px rgb(var(--tint) / 0.7);
+    background: rgb(var(--tint) / 0.6);
+    box-shadow: 0 0 10px 2px rgb(var(--tint) / 0.35);
 }
 
 .sky-particle-autumn {
     width: 13px;
     height: 8px;
     border-radius: 0 80% 0 80%;
-    background: linear-gradient(135deg, rgb(232 150 80 / 0.8), rgb(160 70 40 / 0.7));
+    background: linear-gradient(135deg, rgb(214 150 100 / 0.42), rgb(150 80 50 / 0.32));
 }
 
 @keyframes particle-fall-a {
@@ -629,6 +629,16 @@
         radial-gradient(circle at 64% 42%, rgb(7 9 13 / 0.95) 0 40%, rgb(7 9 13 / 0.55) 44%, transparent 47%),
         radial-gradient(circle at 50% 50%, rgb(232 238 250 / 0.6) 0 30%, rgb(150 168 196 / 0.38) 72%, rgb(236 242 255 / 0.85) 97%);
     box-shadow: 0 0 70px 8px rgb(var(--gs-ice) / 0.16), 0 0 30px rgb(var(--tint) / 0.14), inset 0 1px 3px rgb(255 255 255 / 0.6);
+}
+
+/* The real moon in the hero: a soft cool halo around it, breathing slowly. */
+.gs-moon-glow::before {
+    content: "";
+    position: absolute;
+    inset: -14%;
+    border-radius: 9999px;
+    background: radial-gradient(closest-side, rgb(210 222 245 / 0.16), transparent);
+    animation: glow-pulse 6s ease-in-out infinite;
 }
 
 .gs-spark {
@@ -943,19 +953,99 @@
 }
 
 /* The place on the radar: a small dark bubble with the temperature, like a map label. */
-.radar-pin span {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 28px;
-    border-radius: 9999px;
-    background: rgb(24 32 46 / 0.92);
-    border: 1.5px solid rgb(255 255 255 / 0.9);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 0.4);
+/* ───────────────────────────── Weather map (preview and full screen) ───────────────────────────── */
+/* Map pins are React content in an empty Leaflet marker; it must not clip what hangs off its anchor point. */
+.map-pin {
+    overflow: visible;
+    background: none;
+    border: 0;
 }
+
+/* The place being viewed: a soft ring breathing out of its bubble. */
+.map-pin-current::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 9999px;
+    border: 2px solid rgb(var(--tint) / 0.7);
+    animation: map-pulse 2.4s var(--ease-out) infinite;
+}
+
+.map-user-dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    translate: -50% -50%;
+    border-radius: 9999px;
+    background: #0a84ff;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 8px rgb(10 132 255 / 0.22), 0 2px 8px rgb(0 0 0 / 0.4);
+}
+
+/* Changing radar frames cross-fades instead of blinking. */
+.radar-frame {
+    transition: opacity 300ms ease-out;
+}
+
+/* The full map opens like a page sliding up from the card. */
+.map-screen {
+    animation: map-open 420ms var(--ease-out) both;
+}
+
+.map-screen[data-state="closed"] {
+    animation: map-close 260ms var(--ease-in-out) both;
+}
+
+/* Leaflet's credits sit above the floating timeline. */
+.map-screen .leaflet-bottom {
+    bottom: calc(env(safe-area-inset-bottom) + 8.5rem);
+}
+
+/* The radar timeline: a thin track, filled up to the frame shown, with a white knob. */
+.map-range {
+    appearance: none;
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #fff var(--progress), rgb(255 255 255 / 0.22) var(--progress));
+    outline: none;
+    cursor: pointer;
+}
+
+.map-range:focus-visible {
+    box-shadow: 0 0 0 3px var(--ring);
+}
+
+.map-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.45);
+}
+
+.map-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: 0;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.45);
+}
+
+@keyframes map-pulse {
+    from { transform: scale(1); opacity: 0.9; }
+    to { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes map-open {
+    from { opacity: 0; transform: scale(0.97) translate3d(0, 24px, 0); }
+}
+
+@keyframes map-close {
+    to { opacity: 0; transform: scale(0.98) translate3d(0, 16px, 0); }
+}
+
 
 /* ───────────────────────────── Scroll choreography ─────────────────────────────
    Driven by the page scroll position itself (no JS): the big headline fades and lifts away, then the compact bar

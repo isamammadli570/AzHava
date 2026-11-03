@@ -1,6 +1,6 @@
 import {useCallback, useMemo} from "react";
 import {keepPreviousData, queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
-import {getCurrentBatch, getForecast, getHourlyDetail, type CurrentSnapshotResponse, type ForecastResponse} from "@/api/forecast.api";
+import {getCurrentBatch, getForecast, getGridWeather, getHourlyDetail, type CurrentSnapshotResponse, type ForecastResponse} from "@/api/forecast.api";
 import {ERRORS} from "@/constants/errors";
 import {FORECAST_STALE_TIME, QUERY_KEYS} from "@/constants/other";
 import {localDateKey} from "@/helpers/dates";
@@ -100,3 +100,14 @@ export const usePrefetchHourlyDetail = () => {
     const queryClient = useQueryClient();
     return useCallback((place: Coordinates) => void queryClient.prefetchQuery(hourlyDetailQueryOptions(place)), [queryClient]);
 };
+
+/** Current temperature and wind on a grid of map points (the map's temperature and wind layers). */
+export const useGetGridWeather = (points: Coordinates[], enabled: boolean) =>
+    useQuery({
+        queryKey: [QUERY_KEYS.GRID, points.map(coordinatesKey).join("|")],
+        queryFn: () => getGridWeather(points),
+        enabled: enabled && points.length > 0,
+        staleTime: FORECAST_STALE_TIME,
+        placeholderData: keepPreviousData,
+        meta: {suppressGlobalError: true},
+    });

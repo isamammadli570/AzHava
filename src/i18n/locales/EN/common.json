@@ -53,7 +53,6 @@
     },
     "footer": {
         "data": "Weather data",
-        "madeBy": "Made by",
         "moon": "Moon image"
     },
     "offline": "You are offline — showing the last loaded data",

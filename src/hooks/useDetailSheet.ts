@@ -1,7 +1,7 @@
 import {useCallback} from "react";
 import {useLocation, useNavigate, useSearchParams} from "react-router";
 
-export const SHEETS = ["conditions", "wind", "moon", "sun", "uv", "humidity", "visibility", "pressure"] as const;
+export const SHEETS = ["conditions", "wind", "moon", "sun", "uv", "humidity", "visibility", "pressure", "radar"] as const;
 export type SheetKind = (typeof SHEETS)[number];
 
 /** The conditions sheet can open on the real temperature or on the feels-like one. */

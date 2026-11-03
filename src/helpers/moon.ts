@@ -105,14 +105,14 @@ const DEG = Math.PI / 180;
 
 /**
  * The moon at a moment, drawn the way iOS Weather does: north always up (it does not spin with the sky over the
- * night, which would swing it left and right as the hours change), lit from the side the sun is on. The bright limb's
- * position angle (SunCalc, eastward from north; east is to the left on the sky) points the light, and the phase angle
- * (from the lit fraction) sets how far it comes from behind. Libration uses its dominant terms (the moon's mean
+ * night, which would swing it left and right as the hours change) and lit straight from the side, as iOS draws it: from
+ * the right while waxing, from the left while waning. The phase angle (from the lit fraction) sets how far the light
+ * comes from behind; at new and full moon it is straight behind or in front, so switching sides never jumps. Libration uses its dominant terms (the moon's mean
  * anomaly and argument of latitude), so the face nods slowly and smoothly from day to day.
  */
 export const moonView = (unixSeconds: number): MoonView => {
     const date = new Date(unixSeconds * 1000);
-    const {fraction, phase, angle} = SunCalc.getMoonIllumination(date);
+    const {fraction, phase} = SunCalc.getMoonIllumination(date);
     const phaseAngle = Math.acos(Math.min(1, Math.max(-1, 2 * fraction - 1)));
     const sideways = Math.sin(phaseAngle);
     const days = unixSeconds / 86_400 - 10_957.5;
@@ -120,7 +120,7 @@ export const moonView = (unixSeconds: number): MoonView => {
     const argumentOfLatitude = (93.272 + 13.22935 * days) * DEG;
     return {
         phase,
-        light: [-Math.sin(angle) * sideways, Math.cos(angle) * sideways, Math.cos(phaseAngle)],
+        light: [(phase < 0.5 ? 1 : -1) * sideways, 0, Math.cos(phaseAngle)],
         libration: [-6.3 * Math.sin(meanAnomaly) * DEG, 6.7 * Math.sin(argumentOfLatitude) * DEG],
     };
 };

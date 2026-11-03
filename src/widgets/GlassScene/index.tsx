@@ -2,6 +2,7 @@ import {LIGHTNING_PERIOD_S} from "@/constants/other";
 import {CONDITION, type Condition, type Intensity} from "@/helpers/weather";
 import {useTimelinePhase} from "@/hooks/useTimelinePhase";
 import {cn} from "@/lib/utils";
+import {MoonDisc} from "@/widgets/MoonDisc";
 
 /** Deterministic pseudo-random numbers, so the sculpture looks the same on every render. */
 const seeded = (seed: number) => () => {
@@ -103,6 +104,8 @@ type GlassSceneProps = {
     isDay: boolean;
     intensity: Intensity;
     isWindy?: boolean;
+    /** The moment shown (unix seconds): at night the real moon is drawn at its phase for that time. */
+    time?: number;
     className?: string;
 };
 
@@ -115,7 +118,7 @@ type GlassSceneProps = {
  * layer, glints slide down the threads, beads swell and drop, rings spread; the threads themselves are still after
  * unrolling on arrival. Sized by its container (container query units).
  */
-export const GlassScene = ({condition, isDay, intensity, isWindy = false, className}: GlassSceneProps) => {
+export const GlassScene = ({condition, isDay, intensity, isWindy = false, time, className}: GlassSceneProps) => {
     const isWet = isWetCondition(condition);
     const isDrizzle = condition === CONDITION.DRIZZLE;
     const strands = isWet ? spreadStrands(STRAND_COUNT[isDrizzle ? 1 : (Math.max(intensity, 1) as Intensity)]) : [];
@@ -141,7 +144,13 @@ export const GlassScene = ({condition, isDay, intensity, isWindy = false, classN
                                 style={{left: `${spark.left - 10}%`, top: `${spark.top}%`, width: spark.size, height: spark.size, animationDelay: `${spark.delay}s`}}
                             />
                         ))}
-                        <span className={cn("gs-orb", isDay ? "gs-orb-sun" : "gs-orb-moon")}/>
+                        {isDay || time === undefined ? (
+                            <span className={cn("gs-orb", isDay ? "gs-orb-sun" : "gs-orb-moon")}/>
+                        ) : (
+                            <span className="gs-moon-glow relative block">
+                                <MoonDisc time={time} earthshine={0.04} className="w-full"/>
+                            </span>
+                        )}
                     </div>
                 </div>
             )}

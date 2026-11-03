@@ -119,6 +119,7 @@ type WeatherContentProps = {
 const WeatherContent = ({place, current, hourly, daily, yesterday, timezone, utcOffset, air, isAirLoading, updatedAt, isRefreshing, isStale, onRefresh}: WeatherContentProps) => {
     const {t} = useTranslation("weather");
     const {locale} = useLanguage();
+    const {placeName} = usePlaceLabel();
     const stage = useRenderStages(4);
     const deferredHourly = useDeferredValue(hourly);
     const deferredDaily = useDeferredValue(daily);
@@ -139,12 +140,12 @@ const WeatherContent = ({place, current, hourly, daily, yesterday, timezone, utc
     return (
         <>
             <CompactBar place={place} current={current}/>
-            <DetailSheetHost place={place} daily={daily} yesterday={yesterday} timezone={timezone} utcOffset={utcOffset}/>
+            <DetailSheetHost place={place} current={current} daily={daily} yesterday={yesterday} timezone={timezone} utcOffset={utcOffset}/>
             <div
                 aria-busy={isStale}
                 className={cn(
                     "grid grid-cols-[minmax(0,1fr)] gap-3 transition-opacity duration-(--duration-base) [grid-template-areas:'hero'_'advice'_'daily'_'radar'_'details'] sm:gap-4",
-                    "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-5 lg:[grid-template-areas:'hero_hero'_'daily_radar'_'advice_radar'_'details_details']",
+                    "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-5 lg:[grid-template-areas:'hero_hero'_'daily_radar'_'daily_advice'_'details_details'] lg:items-start",
                     isStale && "opacity-60",
                 )}
             >
@@ -164,7 +165,14 @@ const WeatherContent = ({place, current, hourly, daily, yesterday, timezone, utc
                 {stage >= 3 && (
                     <>
                         <DailyForecast days={deferredDaily} timezone={timezone} currentTemp={deferredCurrent.temperature_2m} placeId={deferredPlaceId}/>
-                        <RadarCard latitude={place.latitude} longitude={place.longitude} temperature={current.temperature_2m}/>
+                        <RadarCard
+                            latitude={place.latitude}
+                            longitude={place.longitude}
+                            placeName={placeName(place)}
+                            temperature={current.temperature_2m}
+                            weatherCode={current.weather_code}
+                            isDay={current.is_day === 1}
+                        />
                     </>
                 )}
                 {stage >= 4 && (

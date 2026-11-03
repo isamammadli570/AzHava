@@ -13,12 +13,12 @@ type MoonDiscProps = {
 };
 
 /**
- * The moon as a lit sphere from a real photograph (NASA Scientific Visualization Studio, full moon of 25 Jan 2024),
+ * The moon as a lit sphere wrapped in NASA's LRO colour map (the flat fallback uses an SVS full-moon photograph),
  * north up and lit from the sun's side as at that moment, like iOS Weather: the terminator falls off softly over the
  * curved surface, the night side keeps a little earthshine, and the face nods slowly (libration) as time moves.
  * Without WebGL it falls back to the flat photo with the phase shaded over it.
  */
-export const MoonDisc = ({time, earthshine = 0.025, className}: MoonDiscProps) => {
+export const MoonDisc = ({time, earthshine = 0.012, className}: MoonDiscProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const view = useMemo(() => moonView(time), [time]);
     const [isSupported] = useState(supportsMoonRenderer);
@@ -31,7 +31,8 @@ export const MoonDisc = ({time, earthshine = 0.025, className}: MoonDiscProps) =
         const canvas = canvasRef.current;
         if (!canvas || !isReady) return;
         const draw = () => {
-            const scale = Math.min(window.devicePixelRatio || 1, 2);
+            // Twice the screen's density, scaled down by the browser: a supersampled, smooth limb.
+            const scale = Math.min((window.devicePixelRatio || 1) * 2, 4);
             const size = Math.round(canvas.clientWidth * scale);
             if (size === 0) return;
             if (canvas.width !== size) {

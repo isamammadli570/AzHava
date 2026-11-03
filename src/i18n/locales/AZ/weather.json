@@ -266,7 +266,30 @@
         "ago": "{{minutes}} dəq əvvəl",
         "loading": "Radar yüklənir…",
         "unavailable": "Radar məlumatı hazırda əlçatan deyil",
-        "hint": "Son 2 saatın yağıntısı, 10 dəqiqəlik addımlarla"
+        "hint": "Son 2 saatın yağıntısı, 10 dəqiqəlik addımlarla",
+        "open": "Xəritəni aç",
+        "mapTitle": "Hava xəritəsi",
+        "done": "Bağla",
+        "locate": "Mənim yerim",
+        "places": "Yerlərim",
+        "layers": "Xəritə qatları",
+        "layer": {
+            "precipitation": "Yağıntı",
+            "temperature": "Temperatur",
+            "wind": "Külək"
+        },
+        "levels": {
+            "extreme": "Çox güclü",
+            "heavy": "Güclü",
+            "moderate": "Orta",
+            "light": "Zəif"
+        },
+        "past2h": "Son 2 saatın yağıntısı",
+        "timeline": "Radar vaxtı",
+        "currentLayer": {
+            "temperature": "Hazırkı temperatur",
+            "wind": "Hazırkı külək"
+        }
     },
     "compassAbbr": {
         "N": "Şm",
