@@ -53,7 +53,8 @@
     },
     "footer": {
         "data": "Hava məlumatları",
-        "madeBy": "Hazırladı:"
+        "madeBy": "Hazırladı:",
+        "moon": "Ay şəkli"
     },
     "offline": "İnternet bağlantısı yoxdur — son yüklənən məlumat göstərilir",
     "updatedJustNow": "İndicə yeniləndi",

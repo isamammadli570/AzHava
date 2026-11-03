@@ -1,4 +1,4 @@
-import {daysUntilFullMoon, findNewAndFull, litMoonPath, moonInfo, moonPhaseName} from "@/helpers/moon";
+import {daysUntilFullMoon, findNewAndFull, litMoonPath, moonInfo, moonPhaseName, moonView, nextMoonrise} from "@/helpers/moon";
 
 describe("moonPhaseName", () => {
     it("rounds to the nearest of eight phases", () => {
@@ -44,3 +44,40 @@ describe("findNewAndFull", () => {
         expect(findNewAndFull([0.1, 0.2, 0.3])).toEqual({newMoon: null, fullMoon: null});
     });
 });
+
+describe("nextMoonrise", () => {
+    it("finds a moonrise after the given moment, within a few days", () => {
+        const now = Date.UTC(2026, 10, 3, 12) / 1000;
+        const rise = nextMoonrise(now, 40.4, 49.9);
+        expect(rise).not.toBeNull();
+        expect(rise! - now).toBeGreaterThan(0);
+        expect(rise! - now).toBeLessThan(2 * 86_400);
+    });
+});
+
+describe("moonView", () => {
+    const length = (vector: number[]) => Math.hypot(...vector);
+
+    it("lights the moon from the front at full moon and from the side at a quarter", () => {
+        // Full moon of 24 Nov 2026 and last quarter of 1 Nov 2026 (UTC).
+        const full = moonView(Date.UTC(2026, 10, 24, 15) / 1000);
+        expect(full.light[2]).toBeGreaterThan(0.95);
+        const quarter = moonView(Date.UTC(2026, 10, 1, 20) / 1000);
+        expect(Math.abs(quarter.light[2])).toBeLessThan(0.2);
+        expect(length(quarter.light)).toBeCloseTo(1);
+    });
+
+    it("keeps libration within a few degrees", () => {
+        const view = moonView(Date.UTC(2026, 10, 3) / 1000);
+        view.libration.forEach((value) => expect(Math.abs(value)).toBeLessThan(0.13));
+    });
+});
+
+    it("turns smoothly hour by hour, with no jumps in the light direction", () => {
+        const start = Date.UTC(2026, 10, 1) / 1000;
+        for (let hour = 0; hour < 72; hour++) {
+            const a = moonView(start + hour * 3600).light;
+            const b = moonView(start + (hour + 1) * 3600).light;
+            expect(Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])).toBeLessThan(0.05);
+        }
+    });

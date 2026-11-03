@@ -257,7 +257,8 @@
             "waningGibbous": "Убывающая луна",
             "lastQuarter": "Последняя четверть",
             "waningCrescent": "Убывающий серп"
-        }
+        },
+        "nextRise": "Следующий восход Луны"
     },
     "radar": {
         "title": "Радар осадков",
@@ -392,6 +393,7 @@
         "daylightSame": "День такой же длины, как предыдущий.",
         "uvScale": "Шкала УФ",
         "dewPointTitle": "Точка росы",
-        "visibilityScale": "Шкала видимости"
+        "visibilityScale": "Шкала видимости",
+        "backToNow": "Вернуться к текущему времени"
     }
 }

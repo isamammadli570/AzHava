@@ -1,7 +1,7 @@
 import {useTranslation} from "react-i18next";
 import {AUTHOR} from "@/constants/author";
 
-/** Author credit, plus the attribution Open-Meteo's licence (CC BY 4.0) asks for wherever its data is shown. */
+/** Author credit, the attribution Open-Meteo's licence (CC BY 4.0) asks for wherever its data is shown, and NASA's moon photo. */
 export const Footer = () => {
     const {t} = useTranslation();
 
@@ -26,6 +26,11 @@ export const Footer = () => {
                     Open-Meteo.com
                 </a>{" "}
                 (CC BY 4.0)
+                <span className="mx-1.5">·</span>
+                {t("footer.moon")}:{" "}
+                <a href="https://svs.gsfc.nasa.gov/5187/" target="_blank" rel="noreferrer" className="font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
+                    NASA SVS
+                </a>
             </p>
         </footer>
     );

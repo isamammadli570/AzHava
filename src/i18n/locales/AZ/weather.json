@@ -255,7 +255,8 @@
             "waningGibbous": "Kiçilən ay",
             "lastQuarter": "Son rüb",
             "waningCrescent": "Kiçilən hilal"
-        }
+        },
+        "nextRise": "Ayın növbəti doğuşu"
     },
     "radar": {
         "title": "Yağıntı radarı",
@@ -386,6 +387,7 @@
         "daylightSame": "Gündüz əvvəlki gün qədərdir.",
         "uvScale": "UV şkalası",
         "dewPointTitle": "Şeh nöqtəsi",
-        "visibilityScale": "Görünmə şkalası"
+        "visibilityScale": "Görünmə şkalası",
+        "backToNow": "İndiyə qayıt"
     }
 }

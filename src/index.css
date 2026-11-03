@@ -879,6 +879,11 @@
     animation: fade-out 260ms var(--ease-in-out) both;
 }
 
+/* The moon sheet: the night itself, pure black like iOS. */
+.sheet-night {
+    background: #000;
+}
+
 /* A panel inside a sheet: a slightly lighter glass with the same light from below as the cards. */
 .sheet-panel {
     background:

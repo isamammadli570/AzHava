@@ -255,7 +255,8 @@
             "waningGibbous": "Waning gibbous",
             "lastQuarter": "Last quarter",
             "waningCrescent": "Waning crescent"
-        }
+        },
+        "nextRise": "Next moonrise"
     },
     "radar": {
         "title": "Precipitation radar",
@@ -386,6 +387,7 @@
         "daylightSame": "Daylight is as long as the day before.",
         "uvScale": "UV scale",
         "dewPointTitle": "Dew point",
-        "visibilityScale": "Visibility scale"
+        "visibilityScale": "Visibility scale",
+        "backToNow": "Back to now"
     }
 }

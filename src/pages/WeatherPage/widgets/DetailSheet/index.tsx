@@ -82,7 +82,7 @@ export const DetailSheetHost = ({place, daily, yesterday, timezone, utcOffset}: 
     };
 
     return (
-        <SheetShell open={sheet !== null} onClose={close} icon={HEADERS[kind].icon} title={t(HEADERS[kind].title)}>
+        <SheetShell open={sheet !== null} onClose={close} icon={HEADERS[kind].icon} title={t(HEADERS[kind].title)} isNight={kind === "moon"}>
             {kind !== "moon" && <DayPicker days={days} selected={dayIndex} onSelect={setDay} timezone={timezone} locale={locale}/>}
             {/* Keyed by sheet and day, so each change re-runs the entrance (charts draw in again). */}
             <div key={`${kind}-${dayIndex}`} className="animate-[fade-in_320ms_var(--ease-out)]">

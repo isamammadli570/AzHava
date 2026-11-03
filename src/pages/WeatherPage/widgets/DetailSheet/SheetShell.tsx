@@ -2,17 +2,26 @@ import {useRef, type PointerEvent, type ReactNode} from "react";
 import {X} from "lucide-react";
 import {Dialog} from "radix-ui";
 import {useTranslation} from "react-i18next";
+import {cn} from "@/lib/utils";
 
 const DISMISS_DISTANCE = 120;
 const DISMISS_SPEED = 0.6;
 
-type SheetShellProps = {open: boolean; onClose: () => void; icon: ReactNode; title: string; children: ReactNode};
+type SheetShellProps = {
+    open: boolean;
+    onClose: () => void;
+    icon: ReactNode;
+    title: string;
+    /** Night black with no visible title (the moon sheet, like iOS); the title stays for screen readers. */
+    isNight?: boolean;
+    children: ReactNode;
+};
 
 /**
  * The frame of every detail sheet. On phones it is a bottom sheet that slides up and can be dragged down by its top
  * bar to dismiss; on wider screens a centred panel. Esc, the × button, tapping outside and the back button close it.
  */
-export const SheetShell = ({open, onClose, icon, title, children}: SheetShellProps) => {
+export const SheetShell = ({open, onClose, icon, title, isNight = false, children}: SheetShellProps) => {
     const {t} = useTranslation("weather");
     const contentRef = useRef<HTMLDivElement>(null);
     const drag = useRef<{startY: number; startTime: number; offset: number} | null>(null);
@@ -48,7 +57,7 @@ export const SheetShell = ({open, onClose, icon, title, children}: SheetShellPro
         <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
             <Dialog.Portal>
                 <Dialog.Overlay className="sheet-overlay fixed inset-0 z-50 bg-black/60"/>
-                <Dialog.Content ref={contentRef} aria-describedby={undefined} className="sheet fixed z-50 flex flex-col overflow-hidden outline-none">
+                <Dialog.Content ref={contentRef} aria-describedby={undefined} className={cn("sheet fixed z-50 flex flex-col overflow-hidden outline-none", isNight && "sheet-night")}>
                     <div
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}
@@ -57,7 +66,7 @@ export const SheetShell = ({open, onClose, icon, title, children}: SheetShellPro
                         className="relative shrink-0 touch-none px-4 pt-2.5 pb-3 sm:touch-auto sm:pt-4"
                     >
                         <span aria-hidden className="mx-auto mb-2.5 block h-1 w-10 rounded-full bg-white/25 sm:hidden"/>
-                        <div className="flex items-center justify-center gap-2 px-10">
+                        <div className={cn("flex items-center justify-center gap-2 px-10", isNight && "sr-only")}>
                             <span className="text-muted-foreground [&_svg]:size-4" aria-hidden>{icon}</span>
                             <Dialog.Title className="truncate text-[12px] font-medium tracking-[0.2em] uppercase">{title}</Dialog.Title>
                         </div>

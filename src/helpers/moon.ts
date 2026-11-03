@@ -80,3 +80,47 @@ export const findNewAndFull = (phases: number[]): {newMoon: number | null; fullM
     });
     return {newMoon, fullMoon};
 };
+
+/** The next moonrise after a moment (searching four UTC days ahead), or null when there is none (polar regions). */
+export const nextMoonrise = (unixSeconds: number, latitude: number, longitude: number): number | null => {
+    const dayStart = Math.floor(unixSeconds / 86_400) * 86_400;
+    const rises: number[] = [];
+    for (let day = 0; day < 4; day++) {
+        const {rise} = SunCalc.getMoonTimes(new Date((dayStart + day * 86_400) * 1000), latitude, longitude, true);
+        if (rise) rises.push(Math.floor(rise.getTime() / 1000));
+    }
+    return rises.filter((time) => time > unixSeconds).sort((a, b) => a - b)[0] ?? null;
+};
+
+/** How to draw the moon at a moment: light direction and libration (see `MoonDisc`). */
+export type MoonView = {
+    phase: number;
+    /** Unit vector towards the sun in screen space: x right, y up, z towards the viewer. */
+    light: [number, number, number];
+    /** Optical libration in longitude and latitude, in radians: the slow nodding that shows a little more of one edge. */
+    libration: [number, number];
+};
+
+const DEG = Math.PI / 180;
+
+/**
+ * The moon at a moment, drawn the way iOS Weather does: north always up (it does not spin with the sky over the
+ * night, which would swing it left and right as the hours change), lit from the side the sun is on. The bright limb's
+ * position angle (SunCalc, eastward from north; east is to the left on the sky) points the light, and the phase angle
+ * (from the lit fraction) sets how far it comes from behind. Libration uses its dominant terms (the moon's mean
+ * anomaly and argument of latitude), so the face nods slowly and smoothly from day to day.
+ */
+export const moonView = (unixSeconds: number): MoonView => {
+    const date = new Date(unixSeconds * 1000);
+    const {fraction, phase, angle} = SunCalc.getMoonIllumination(date);
+    const phaseAngle = Math.acos(Math.min(1, Math.max(-1, 2 * fraction - 1)));
+    const sideways = Math.sin(phaseAngle);
+    const days = unixSeconds / 86_400 - 10_957.5;
+    const meanAnomaly = (134.963 + 13.064993 * days) * DEG;
+    const argumentOfLatitude = (93.272 + 13.22935 * days) * DEG;
+    return {
+        phase,
+        light: [-Math.sin(angle) * sideways, Math.cos(angle) * sideways, Math.cos(phaseAngle)],
+        libration: [-6.3 * Math.sin(meanAnomaly) * DEG, 6.7 * Math.sin(argumentOfLatitude) * DEG],
+    };
+};
