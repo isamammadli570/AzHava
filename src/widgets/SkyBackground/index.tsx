@@ -1,58 +1,60 @@
 import {useState, type CSSProperties, type ReactNode} from "react";
+import {LIGHTNING_PERIOD_S} from "@/constants/other";
+import type {Season} from "@/helpers/season";
 import {CONDITION, skyClass, type Scene} from "@/helpers/weather";
 import {useLingering} from "@/hooks/useLingering";
+import {useTimelinePhase} from "@/hooks/useTimelinePhase";
 import {cn} from "@/lib/utils";
 import {Precipitation, type PrecipitationKind} from "@/widgets/SkyBackground/Precipitation";
 
-/** Deterministic pseudo-random numbers, so stars and clouds sit in the same place on every render. */
+/** Deterministic pseudo-random numbers, so stars, smoke and particles sit in the same place on every render. */
 const seeded = (seed: number) => () => {
     seed = (seed * 16807) % 2147483647;
     return (seed - 1) / 2147483646;
 };
 
 const random = seeded(42);
-const STARS = Array.from({length: 70}, () => ({
+// Timings come from a few shared rhythms (by index): every looping animation wakes the main thread once per loop,
+// so fifty different timings would mean a wake-up nearly every frame.
+const RHYTHMS = [{duration: 3, delay: 0}, {duration: 4.2, delay: -1.4}, {duration: 5.6, delay: -2.8}];
+
+const STARS = Array.from({length: 50}, (_, index) => ({
     left: random() * 100,
-    top: random() * 70,
-    size: 1 + random() * 1.8,
-    duration: 2.5 + random() * 4,
-    delay: -random() * 6,
+    top: random() * 60,
+    size: 0.8 + random() * 1.4,
+    ...RHYTHMS[index % RHYTHMS.length],
 }));
 
-const CLOUDS = Array.from({length: 9}, (_, index) => {
-    const duration = 80 + random() * 90;
+const SMOKE = Array.from({length: 7}, (_, index) => {
+    const duration = 110 + random() * 90;
     return {
-        top: -4 + random() * 52,
-        width: 320 + random() * 420,
+        top: -6 + random() * 70,
+        width: 420 + random() * 520,
         duration,
-        // A negative delay starts each cloud part-way across, so the sky is never empty on load.
+        // A negative delay starts each bank part-way across, so the mist is never empty on load.
         delay: -random() * duration,
-        rest: random() * 90,
-        opacity: 0.55 + random() * 0.45,
+        rest: random() * 80,
+        opacity: 0.18 + random() * 0.22,
         order: index,
     };
 });
 
-const METEORS = [
-    {top: 8, left: 62, duration: 9, delay: 2},
-    {top: 22, left: 30, duration: 13, delay: 7},
-];
-
-const WIND_STREAKS = Array.from({length: 7}, () => ({
-    top: 10 + random() * 75,
-    width: 120 + random() * 220,
-    duration: 1.6 + random() * 1.6,
-    delay: -random() * 3,
+const PARTICLES = Array.from({length: 14}, () => ({
+    left: random() * 100,
+    size: 0.7 + random() * 0.8,
+    duration: 14 + random() * 14,
+    delay: -random() * 28,
 }));
 
-const CLOUD_COUNT: Record<Scene["condition"], number> = {clear: 0, partlyCloudy: 4, cloudy: 8, fog: 5, drizzle: 7, rain: 8, snow: 7, thunder: 9};
+const WIND_STREAKS = Array.from({length: 6}, (_, index) => ({
+    top: 10 + random() * 75,
+    width: 120 + random() * 220,
+    duration: index % 2 ? 2.6 : 1.9,
+    delay: index % 2 ? -1.2 : 0,
+}));
 
-const cloudColor = ({condition, isDay}: Scene): string => {
-    if (condition === CONDITION.THUNDER) return isDay ? "rgb(70 80 98)" : "rgb(38 45 60)";
-    if (condition === CONDITION.RAIN || condition === CONDITION.DRIZZLE) return isDay ? "rgb(118 133 154)" : "rgb(48 58 76)";
-    if (condition === CONDITION.CLOUDY || condition === CONDITION.FOG) return isDay ? "rgb(196 206 220)" : "rgb(62 72 92)";
-    return isDay ? "rgb(255 255 255)" : "rgb(120 135 170)";
-};
+/** Mist banks per sky: always a little haze, thicker under cloud, rain and fog. */
+const SMOKE_COUNT: Record<Scene["condition"], number> = {clear: 2, partlyCloudy: 4, cloudy: 6, fog: 7, drizzle: 6, rain: 6, snow: 5, thunder: 7};
 
 const precipitationKind = (condition: Scene["condition"]): PrecipitationKind | null => {
     if (condition === CONDITION.SNOW) return "snow";
@@ -60,8 +62,8 @@ const precipitationKind = (condition: Scene["condition"]): PrecipitationKind | n
     return null;
 };
 
-const CloudShape = ({width}: {width: number}) => (
-    <svg viewBox="0 0 300 120" width={width} height={width * 0.4} className="blur-[6px]" aria-hidden>
+const SmokeShape = ({width}: {width: number}) => (
+    <svg viewBox="0 0 300 120" width={width} height={width * 0.4} className="blur-[18px]" aria-hidden>
         <path d="M40 110h220a40 40 0 0 0 0-80 60 60 0 0 0-108-12 44 44 0 0 0-72 28A30 30 0 0 0 40 110z" fill="currentColor"/>
     </svg>
 );
@@ -84,39 +86,55 @@ const SkyLayer = ({show, className, hiddenClassName = "opacity-0", children}: Sk
     );
 };
 
-type CloudProps = {cloud: (typeof CLOUDS)[number]; show: boolean; isWindy: boolean};
+type SmokeProps = {bank: (typeof SMOKE)[number]; show: boolean; isWindy: boolean};
 
-const Cloud = ({cloud, show, isWindy}: CloudProps) => {
+const Smoke = ({bank, show, isWindy}: SmokeProps) => {
     const isMounted = useLingering(show, SKY_FADE_MS);
     if (!isMounted) return null;
     return (
         <div
             className="sky-cloud"
-            style={{top: `${cloud.top}%`, "--duration": `${cloud.duration / (isWindy ? 2.2 : 1)}s`, "--delay": `${cloud.delay}s`, "--rest": `${cloud.rest}vw`} as CSSProperties}
+            style={{top: `${bank.top}%`, "--duration": `${bank.duration / (isWindy ? 2.2 : 1)}s`, "--delay": `${bank.delay}s`, "--rest": `${bank.rest}vw`} as CSSProperties}
         >
-            <div className="animate-[appear_var(--duration-sky)_var(--ease-out)] transition-opacity duration-(--duration-sky)" style={{opacity: show ? cloud.opacity : 0}}>
-                <CloudShape width={cloud.width}/>
+            <div className="animate-[appear_var(--duration-sky)_var(--ease-out)] transition-opacity duration-(--duration-sky)" style={{opacity: show ? bank.opacity : 0}}>
+                <SmokeShape width={bank.width}/>
             </div>
         </div>
+    );
+};
+
+/** One drifting particle per season: frost dust, spring petals, summer light motes, autumn leaves. */
+const SeasonParticle = ({season, particle}: {season: Season; particle: (typeof PARTICLES)[number]}) => {
+    const isRising = season === "summer";
+    return (
+        <span
+            className={cn("sky-particle", `sky-particle-${season}`, isRising ? "sky-particle-rise" : "sky-particle-fall")}
+            style={{
+                left: `${particle.left}%`,
+                "--scale": particle.size,
+                "--duration": `${particle.duration}s`,
+                "--delay": `${particle.delay}s`,
+            } as CSSProperties}
+        />
     );
 };
 
 type SkyBackgroundProps = {scene: Scene};
 
 /**
- * The living backdrop: a gradient per sky that cross-fades on change, sun with god rays or moon with shooting stars,
- * drifting clouds, fog, canvas rain/snow, lightning, wind streaks and the odd rainbow. Decorative only.
+ * The night-glass backdrop: an almost black sky tinted by the weather, slow mist banks, a dark water floor, a faint
+ * season glow and drifting season particles, plus rain/snow streaks, lightning and wind streaks. Decorative only.
  *
- * Built to stay cheap: only two gradient layers exist at a time, stars mount only at night, everything that moves
- * animates `transform`/`opacity` (compositor-only), and the canvas is batched (see `Precipitation`).
+ * Built to stay cheap: two gradient layers at most, hidden pieces are unmounted after their fade, everything that
+ * moves animates `transform`/`opacity` with fixed keyframes, so it all runs on the GPU (see `Precipitation`).
  */
 export const SkyBackground = ({scene}: SkyBackgroundProps) => {
-    const {condition, isDay, intensity, isWindy} = scene;
+    const {condition, isDay, intensity, isWindy, season} = scene;
     const activeClass = skyClass(scene);
     const isClearish = condition === CONDITION.CLEAR || condition === CONDITION.PARTLY_CLOUDY;
-    const cloudCount = CLOUD_COUNT[condition];
+    const smokeCount = SMOKE_COUNT[condition];
     const isStorm = condition === CONDITION.THUNDER;
-    const hasRainbow = isDay && (condition === CONDITION.DRIZZLE || (condition === CONDITION.RAIN && intensity === 1));
+    const lightningDelay = useTimelinePhase(LIGHTNING_PERIOD_S);
 
     // The previous gradient stays underneath while the new one fades in on top (state updated during render).
     const [layers, setLayers] = useState({current: activeClass, previous: activeClass});
@@ -127,73 +145,33 @@ export const SkyBackground = ({scene}: SkyBackgroundProps) => {
             <div className={cn("absolute inset-0", layers.previous)}/>
             <div key={layers.current} className={cn("absolute inset-0 animate-[fade-in_var(--duration-sky)_var(--ease-in-out)_both]", layers.current)}/>
 
-            {/* Stars and shooting stars */}
-            {!isDay && (
-                <div className={cn("absolute inset-0 animate-fade-in transition-opacity duration-(--duration-sky)", isClearish ? "opacity-100" : "opacity-20")}>
-                    {STARS.map((star, index) => (
-                        <span
-                            key={index}
-                            className="sky-star"
-                            style={{left: `${star.left}%`, top: `${star.top}%`, width: star.size, height: star.size, "--duration": `${star.duration}s`, "--delay": `${star.delay}s`} as CSSProperties}
-                        />
-                    ))}
-                    {isClearish && METEORS.map((meteor) => (
-                        <span
-                            key={meteor.left}
-                            className="sky-meteor"
-                            style={{top: `${meteor.top}%`, left: `${meteor.left}%`, "--duration": `${meteor.duration}s`, "--delay": `${meteor.delay}s`} as CSSProperties}
-                        />
-                    ))}
-                </div>
-            )}
+            {/* Season glow: a faint warm or cool light from the upper right. */}
+            <div className="absolute -top-1/4 -right-1/4 size-[80vmax] rounded-full bg-[radial-gradient(closest-side,rgb(var(--tint)/0.09),transparent)] transition-colors duration-(--duration-sky)"/>
 
-            {/* Sun with slow god rays */}
-            <SkyLayer
-                show={isDay && isClearish}
-                hiddenClassName="translate-y-16 opacity-0"
-                className={cn("absolute top-[-9rem] right-[-9rem] size-[26rem] sm:top-[-4rem] sm:right-[6%]", condition !== CONDITION.CLEAR && "opacity-70")}
-            >
-                <div className="absolute inset-0 animate-[glow-pulse_8s_ease-in-out_infinite] rounded-full bg-[radial-gradient(circle,rgb(255_220_140/0.55)_0%,rgb(255_200_87/0.18)_35%,transparent_68%)]"/>
-                <div className="absolute inset-[5.5rem] animate-[spin_120s_linear_infinite] rounded-full bg-[repeating-conic-gradient(from_0deg,rgb(255_236_179/0.16)_0deg_6deg,transparent_6deg_18deg)] [mask-image:radial-gradient(circle,#000_30%,transparent_70%)]"/>
-                <div className="absolute inset-[9.5rem] rounded-full bg-[radial-gradient(circle_at_38%_35%,#fff7d6,#ffd36b_45%,#ffab2e)] shadow-[0_0_80px_30px_rgb(255_200_87/0.45)]"/>
-            </SkyLayer>
-            <SkyLayer show={isDay && isClearish} className="absolute inset-0">
-                <div className="sky-beam absolute top-[-20%] right-[12%] h-[140%] w-40 rotate-[28deg] bg-gradient-to-b from-[rgb(255_236_179/0.16)] to-transparent blur-2xl"/>
-                <div className="sky-beam absolute top-[-20%] right-[30%] h-[140%] w-24 rotate-[34deg] bg-gradient-to-b from-[rgb(255_236_179/0.12)] to-transparent blur-2xl [--delay:-4s]"/>
+            <SkyLayer show={!isDay} className={cn("absolute inset-0", isClearish ? "opacity-100" : "opacity-30")}>
+                {STARS.map((star, index) => (
+                    <span
+                        key={index}
+                        className="sky-star"
+                        style={{left: `${star.left}%`, top: `${star.top}%`, width: star.size, height: star.size, "--duration": `${star.duration}s`, "--delay": `${star.delay}s`} as CSSProperties}
+                    />
+                ))}
             </SkyLayer>
 
-            {/* Moon */}
-            <SkyLayer
-                show={!isDay && (isClearish || condition === CONDITION.CLOUDY)}
-                hiddenClassName="translate-y-16 opacity-0"
-                className={cn(
-                    "absolute top-[3.5rem] right-[8%] size-20 rounded-full sm:top-[5rem] sm:size-24",
-                    "bg-[radial-gradient(circle_at_35%_35%,#fffdf4,#e3e7f5_55%,#b9c2dc)] shadow-[0_0_70px_24px_rgb(200_215_255/0.22)]",
-                    condition === CONDITION.CLOUDY && "translate-y-4 opacity-20",
-                )}
-            >
-                <span className="absolute top-[28%] left-[30%] size-[18%] rounded-full bg-[#c9cfe2]/70"/>
-                <span className="absolute top-[56%] left-[55%] size-[12%] rounded-full bg-[#c9cfe2]/60"/>
-                <span className="absolute top-[62%] left-[26%] size-[9%] rounded-full bg-[#c9cfe2]/50"/>
-            </SkyLayer>
-
-            {/* Rainbow after light rain in daylight */}
-            <SkyLayer show={hasRainbow} className="absolute bottom-[-35vmax] left-[-10vmax] size-[90vmax] rounded-full">
-                <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,transparent_56%,rgb(255_80_80/0.16)_57%,rgb(255_170_60/0.16)_59%,rgb(255_235_90/0.14)_61%,rgb(90_220_120/0.12)_63%,rgb(80_160_255/0.12)_65%,rgb(150_100_255/0.1)_67%,transparent_69%)]"/>
-            </SkyLayer>
-
-            {/* Clouds: only as many as the weather needs exist at all. */}
-            <div className="absolute inset-0 transition-colors duration-(--duration-sky)" style={{color: cloudColor(scene)}}>
-                {CLOUDS.map((cloud) => <Cloud key={cloud.order} cloud={cloud} show={cloud.order < cloudCount} isWindy={isWindy}/>)}
+            {/* Mist: grey smoke banks drifting slowly across. */}
+            <div className="absolute inset-0 text-[rgb(70_77_90)]">
+                {SMOKE.map((bank) => <Smoke key={bank.order} bank={bank} show={bank.order < smokeCount} isWindy={isWindy}/>)}
             </div>
 
-            {/* Fog */}
             <SkyLayer show={condition === CONDITION.FOG} className="absolute inset-x-[-20%] bottom-0 h-2/3">
-                <div className="sky-fog absolute inset-x-0 bottom-[10%] h-1/2 rounded-[50%] bg-white/18 blur-3xl"/>
-                <div className="sky-fog absolute inset-x-[10%] bottom-[35%] h-1/3 rounded-[50%] bg-white/12 blur-3xl [--duration:22s]"/>
+                <div className="sky-fog absolute inset-x-0 bottom-[10%] h-1/2 rounded-[50%] bg-white/10 blur-3xl"/>
+                <div className="sky-fog absolute inset-x-[10%] bottom-[35%] h-1/3 rounded-[50%] bg-white/8 blur-3xl [--duration:22s]"/>
             </SkyLayer>
 
-            {/* Wind streaks */}
+            <div key={season} className="absolute inset-0 animate-fade-in">
+                {PARTICLES.map((particle, index) => <SeasonParticle key={index} season={season} particle={particle}/>)}
+            </div>
+
             {isWindy && (
                 <div className="absolute inset-0 animate-fade-in">
                     {WIND_STREAKS.map((streak, index) => (
@@ -206,23 +184,22 @@ export const SkyBackground = ({scene}: SkyBackgroundProps) => {
                 </div>
             )}
 
-            <SkyLayer show={precipitationKind(condition) !== null} className="absolute inset-0">
+            <SkyLayer show={precipitationKind(condition) !== null} className="absolute inset-0 opacity-60">
                 <Precipitation kind={precipitationKind(condition)} intensity={condition === CONDITION.DRIZZLE ? 1 : Math.max(intensity, 1) as Scene["intensity"]} isStorm={isStorm}/>
             </SkyLayer>
 
             {isStorm && (
                 <>
-                    <div className="sky-lightning absolute inset-0 bg-[rgb(205_220_255/0.55)] [--duration:9s]"/>
-                    <div className="sky-lightning absolute inset-0 bg-[rgb(205_220_255/0.35)] [--delay:-4.3s] [--duration:13s]"/>
-                    <svg viewBox="0 0 60 200" className="sky-bolt absolute top-[8%] left-[18%] h-[42vh] drop-shadow-[0_0_18px_rgb(200_220_255)] [--duration:9s]">
-                        <path d="M34 0L12 92h18L16 200 50 74H30L44 0z" fill="rgb(235 242 255)"/>
-                    </svg>
+                    {/* The near strike flashes with the hero's bolt; a fainter, slower one rumbles further away. */}
+                    <div className="sky-lightning absolute inset-0 bg-[rgb(205_220_255/0.16)]" style={{"--delay": lightningDelay} as CSSProperties}/>
+                    <div className="sky-lightning absolute inset-0 bg-[rgb(205_220_255/0.08)] [--delay:-4.3s] [--duration:13s]"/>
                 </>
             )}
 
-            {/* Vignette keeps the edges calm and the text readable on bright skies. */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,transparent_45%,rgb(2_6_20/0.38)_100%)]"/>
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[rgb(2_6_20/0.35)] to-transparent"/>
+            {/* Dark water floor with a soft tinted reflection, like a lake at night. */}
+            <div className="absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-black/70 via-black/35 to-transparent"/>
+            <div className="absolute inset-x-[15%] bottom-[-8vh] h-[18vh] rounded-[50%] bg-[radial-gradient(closest-side,rgb(var(--tint)/0.08),transparent)] blur-xl"/>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,transparent_40%,rgb(0_0_0/0.55)_100%)]"/>
         </div>
     );
 };

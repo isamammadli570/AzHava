@@ -1,32 +1,42 @@
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {Outlet, useNavigation} from "react-router";
 import {WifiOff} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {DEFAULT_SCENE, isSameScene, type Scene} from "@/helpers/weather";
 import {useOnlineStatus} from "@/hooks/useOnlineStatus";
+import {useSeasonPreference} from "@/hooks/useSeasonPreference";
 import {useSpotlight} from "@/hooks/useSpotlight";
 import {SkyBackground} from "@/widgets/SkyBackground";
-import {WeatherIconDefs} from "@/widgets/WeatherIcon";
 import {Header} from "@/layout/MainLayout/Header";
 import {Footer} from "@/layout/MainLayout/Footer";
 import type {LayoutContext} from "@/layout/MainLayout/sceneContext";
 import {cn} from "@/lib/utils";
 
-/** App shell: the live sky (driven by whichever page is open), header, page and footer. */
+/**
+ * App shell: the live sky (driven by whichever page is open), header, page and footer. The season (the place's real
+ * one, or the visitor's pick) is written to <html data-season>, which re-tints the whole interface through CSS.
+ */
 export const MainLayout = () => {
     const {t} = useTranslation();
     const navigation = useNavigation();
     const isOnline = useOnlineStatus();
     const [scene, setSceneState] = useState<Scene>(DEFAULT_SCENE);
+    const {preference} = useSeasonPreference();
     useSpotlight();
+
+    const season = preference === "auto" ? scene.season : preference;
+    const shownScene = useMemo(() => ({...scene, season}), [scene, season]);
+
+    useEffect(() => {
+        document.documentElement.dataset.season = season;
+    }, [season]);
 
     const setScene = useCallback((next: Scene) => setSceneState((previous) => (isSameScene(previous, next) ? previous : next)), []);
     const context = useMemo<LayoutContext>(() => ({setScene}), [setScene]);
 
     return (
         <>
-            <SkyBackground scene={scene}/>
-            <WeatherIconDefs/>
+            <SkyBackground scene={shownScene}/>
             <a href="#main" className="sr-only z-50 rounded-full bg-brand px-4 py-2 text-brand-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
                 {t("skipToContent")}
             </a>

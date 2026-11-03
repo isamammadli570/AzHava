@@ -3,6 +3,7 @@ import {useTranslation} from "react-i18next";
 import {CITIES, CITY_REGION, DEFAULT_CITY_ID} from "@/constants/cities";
 import {ERRORS} from "@/constants/errors";
 import {placeFromCity, type Place} from "@/helpers/place";
+import {seasonFor} from "@/helpers/season";
 import {sceneFor} from "@/helpers/weather";
 import {useGetCurrentBatch, usePrefetchForecast} from "@/hooks/forecast";
 import {useFavorites} from "@/hooks/useFavorites";
@@ -38,7 +39,11 @@ export const CitiesPage = () => {
     const prefetchForecast = usePrefetchForecast();
 
     const bakuNow = byPlaceId.get(BAKU_ID)?.current;
-    const scene = useMemo(() => (bakuNow ? sceneFor(bakuNow.weather_code, bakuNow.is_day === 1) : null), [bakuNow]);
+    const baku = byPlaceId.get(BAKU_ID);
+    const scene = useMemo(
+        () => (bakuNow && baku ? sceneFor(bakuNow.weather_code, bakuNow.is_day === 1, 0, seasonFor(bakuNow.time, baku.timezone, baku.latitude)) : null),
+        [bakuNow, baku],
+    );
     useLayoutScene(scene);
 
     useEffect(() => {

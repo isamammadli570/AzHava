@@ -1,53 +1,37 @@
-import {memo, useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent} from "react";
-import {ChevronLeft, ChevronRight, Clock, Droplet, Thermometer, Wind} from "lucide-react";
+import {memo, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent} from "react";
+import {ChevronLeft, ChevronRight, Maximize2} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {HOURLY_RANGES, type HourlyRange} from "@/constants/other";
-import {areaPath, scaleY, smoothPath} from "@/helpers/chart";
-import {temperatureColor} from "@/helpers/color";
 import {formatClock, formatWeekday, localDateKey} from "@/helpers/dates";
-import {clamp, formatTemp, roundTemp} from "@/helpers/format";
+import {clamp, formatTemp} from "@/helpers/format";
 import type {HourlyPoint} from "@/helpers/forecast";
 import {weatherLabelKey} from "@/helpers/weather";
+import {useOpenSheet} from "@/hooks/useDetailSheet";
 import {useLanguage} from "@/hooks/useLanguage";
-import {Button} from "@/components/ui/button";
-import {Card, CardHeader} from "@/components/ui/card";
-import {SegmentedControl} from "@/widgets/SegmentedControl";
-import {WeatherIcon} from "@/widgets/WeatherIcon";
+import {Card} from "@/components/ui/card";
+import {WeatherGlyph} from "@/widgets/WeatherGlyph";
 import {cn} from "@/lib/utils";
 
-const COLUMN = 60;
-const CHART_HEIGHT = 112;
-const CHART_TOP = 30;
-const CHART_BOTTOM = 96;
-const BAR_HEIGHT = 30;
-const TOOLTIP_WIDTH = 168;
-const SCROLL_STEP = COLUMN * 6;
+const COLUMN = 68;
+const SCROLL_STEP = COLUMN * 5;
 
-type HourlyForecastProps = {hours: HourlyPoint[]; timezone: string; placeId: string};
+type HourlyForecastProps = {hours: HourlyPoint[]; timezone: string; placeId: string; summary: string};
 
 /**
- * Next 24/48 hours as one scrollable strip: time, icon, a smooth temperature curve coloured by temperature, and
- * precipitation chance bars. Hover, tap or arrow keys pick an hour and open its details; night hours get a faint band.
+ * The hours ahead as a frosted strip of columns (time, outline symbol, temperature, rain chance), under a one-line
+ * summary. Pointing at, tapping or arrow-keying to an hour spells it out in the line below the strip.
  */
-export const HourlyForecast = memo(({hours, timezone, placeId}: HourlyForecastProps) => {
+export const HourlyForecast = memo(({hours, timezone, placeId, summary}: HourlyForecastProps) => {
     const {t} = useTranslation(["weather", "common"]);
     const {locale} = useLanguage();
+    const openSheet = useOpenSheet();
     const [range, setRange] = useState<HourlyRange>(24);
-    const [activeIndex, setActiveIndex] = useState<number | null>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
     const [edges, setEdges] = useState({atStart: true, atEnd: false});
     const scrollerRef = useRef<HTMLDivElement>(null);
     const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
     const items = useMemo(() => hours.slice(0, range), [hours, range]);
-    const width = items.length * COLUMN;
-
-    const chart = useMemo(() => {
-        const temps = items.map((hour) => hour.temperature);
-        const min = Math.min(...temps);
-        const max = Math.max(...temps);
-        const points = items.map((hour, index) => ({x: index * COLUMN + COLUMN / 2, y: scaleY(hour.temperature, min, max, CHART_TOP, CHART_BOTTOM)}));
-        const stops = items.map((hour, index) => ({offset: items.length > 1 ? index / (items.length - 1) : 0, color: temperatureColor(hour.temperature)}));
-        return {points, stops, line: smoothPath(points), area: areaPath(points, CHART_HEIGHT)};
-    }, [items]);
+    const active = items[Math.min(activeIndex, items.length - 1)];
 
     const updateEdges = useCallback(() => {
         const scroller = scrollerRef.current;
@@ -65,29 +49,13 @@ export const HourlyForecast = memo(({hours, timezone, placeId}: HourlyForecastPr
 
     const scrollByStep = (direction: 1 | -1) => scrollerRef.current?.scrollBy({left: direction * SCROLL_STEP, behavior: "smooth"});
 
-    const pickFromPointer = (event: PointerEvent<HTMLDivElement>) => {
-        const rect = event.currentTarget.getBoundingClientRect();
-        setActiveIndex(clamp(Math.floor((event.clientX - rect.left) / COLUMN), 0, items.length - 1));
-    };
-
     const moveWithKeys = (event: KeyboardEvent<HTMLDivElement>) => {
-        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft" && event.key !== "Escape") return;
+        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
         event.preventDefault();
-        if (event.key === "Escape") {
-            setActiveIndex(null);
-            return;
-        }
-        const step = event.key === "ArrowRight" ? 1 : -1;
-        const next = clamp((activeIndex ?? (step > 0 ? -1 : 1)) + step, 0, items.length - 1);
+        const next = clamp(activeIndex + (event.key === "ArrowRight" ? 1 : -1), 0, items.length - 1);
         setActiveIndex(next);
-        const scroller = scrollerRef.current;
-        if (scroller) {
-            const left = next * COLUMN;
-            if (left < scroller.scrollLeft || left + COLUMN > scroller.scrollLeft + scroller.clientWidth) scroller.scrollTo({left: left - scroller.clientWidth / 2, behavior: "smooth"});
-        }
+        scrollerRef.current?.querySelector(`[data-index="${next}"]`)?.scrollIntoView({block: "nearest", inline: "nearest", behavior: "smooth"});
     };
-
-    const rangeOptions = HOURLY_RANGES.map((value) => ({value, label: t("hourly.range", {count: value})}));
 
     const timeLabel = (hour: HourlyPoint, index: number): string => {
         if (index === 0) return t("common:now");
@@ -96,167 +64,96 @@ export const HourlyForecast = memo(({hours, timezone, placeId}: HourlyForecastPr
         return isNewDay ? formatWeekday(hour.time, timezone, locale, "short") : formatClock(hour.time, timezone, locale);
     };
 
-    const active = activeIndex !== null ? items[activeIndex] : undefined;
-    const tooltipLeft = activeIndex !== null ? clamp(activeIndex * COLUMN + COLUMN / 2 - TOOLTIP_WIDTH / 2, 0, Math.max(0, width - TOOLTIP_WIDTH)) : 0;
-
     return (
-        <Card aria-labelledby={`${uid}-title`} className="spotlight [grid-area:hourly]">
-            <CardHeader
-                id={`${uid}-title`}
-                icon={<Clock/>}
-                title={t("hourly.title")}
-                actions={
-                    <div className="flex items-center gap-1.5">
-                        <Button variant="ghost" size="icon-sm" className="hidden sm:inline-flex" onClick={() => scrollByStep(-1)} disabled={edges.atStart} aria-label={t("hourly.previous")}>
-                            <ChevronLeft/>
-                        </Button>
-                        <Button variant="ghost" size="icon-sm" className="hidden sm:inline-flex" onClick={() => scrollByStep(1)} disabled={edges.atEnd} aria-label={t("hourly.next")}>
-                            <ChevronRight/>
-                        </Button>
-                        <SegmentedControl options={rangeOptions} value={range} onChange={(value) => {
-                            setRange(value);
-                            setActiveIndex(null);
-                        }} label={t("hourly.title")}/>
-                    </div>
-                }
-            />
+        <Card aria-labelledby={`${uid}-title`} className="spotlight rounded-[1.5rem] px-0 pt-4 pb-3 sm:px-0">
+            <div className="flex items-center justify-between gap-2 px-4 sm:px-5">
+                <h2 id={`${uid}-title`} className="section-label">{t("hourly.title")}</h2>
+                <div className="flex items-center gap-1">
+                    <button type="button" onClick={() => scrollByStep(-1)} disabled={edges.atStart} aria-label={t("hourly.previous")} className="hidden size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30 sm:grid">
+                        <ChevronLeft className="size-4" strokeWidth={1.5}/>
+                    </button>
+                    <button type="button" onClick={() => scrollByStep(1)} disabled={edges.atEnd} aria-label={t("hourly.next")} className="hidden size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30 sm:grid">
+                        <ChevronRight className="size-4" strokeWidth={1.5}/>
+                    </button>
+                    {HOURLY_RANGES.map((value) => (
+                        <button
+                            key={value}
+                            type="button"
+                            aria-pressed={range === value}
+                            onClick={() => {
+                                setRange(value);
+                                setActiveIndex(0);
+                            }}
+                            className={cn(
+                                "rounded-full px-2.5 py-1 text-[10px] font-light tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                                range === value ? "bg-white/10 text-foreground" : "text-subtle-foreground hover:text-foreground",
+                            )}
+                        >
+                            {t("hourly.range", {count: value})}
+                        </button>
+                    ))}
+                    <button
+                        type="button"
+                        onClick={() => openSheet("conditions")}
+                        aria-label={t("sheet.openConditions")}
+                        title={t("sheet.openConditions")}
+                        className="ml-0.5 grid size-7 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                        <Maximize2 className="size-3.5" strokeWidth={1.5}/>
+                    </button>
+                </div>
+            </div>
+            <p className="mt-2 px-4 text-[13px] leading-snug font-light text-muted-foreground sm:px-5">{summary}</p>
+
             <div
                 ref={scrollerRef}
                 role="region"
                 tabIndex={0}
                 aria-label={t("hourly.chartLabel", {count: items.length})}
-                aria-describedby={`${uid}-hint`}
                 onScroll={updateEdges}
                 onKeyDown={moveWithKeys}
-                onBlur={() => setActiveIndex(null)}
-                className="mask-fade-x scrollbar-none -mx-4 overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:-mx-5"
+                className="mask-fade-x scrollbar-none mt-2 overflow-x-auto overscroll-x-contain scroll-smooth focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
-                <div className="relative px-4 sm:px-5" style={{width: width + 40}}>
-                    <div
-                        key={`${placeId}-${range}`}
-                        className="relative touch-pan-x"
-                        style={{width}}
-                        onPointerMove={pickFromPointer}
-                        onPointerDown={pickFromPointer}
-                        onPointerLeave={(event) => event.pointerType === "mouse" && setActiveIndex(null)}
-                    >
-                        {/* Night bands span the whole column height behind everything. */}
-                        <div aria-hidden className="absolute inset-0 flex">
-                            {items.map((hour) => <div key={hour.time} className={hour.isDay ? "w-[60px]" : "w-[60px] bg-black/12"}/>)}
-                        </div>
-                        <div
-                            aria-hidden
-                            className={cn("absolute inset-y-0 w-[60px] rounded-2xl bg-white/10 ring-1 ring-white/15 transition-[translate,opacity] duration-150 ease-(--ease-out)", activeIndex === null ? "opacity-0" : "opacity-100")}
-                            style={{translate: `${(activeIndex ?? 0) * COLUMN}px 0`}}
-                        />
-
-                        <ol className="relative grid" style={{gridTemplateColumns: `repeat(${items.length}, ${COLUMN}px)`}}>
-                            {items.map((hour, index) => (
-                                <li key={hour.time} className="flex flex-col items-center gap-1.5 pt-2">
-                                    <span className={index === 0 ? "text-xs font-semibold text-brand" : "text-xs font-medium text-muted-foreground tabular first-letter:uppercase"}>
+                <ol key={`${placeId}-${range}`} className="stagger flex w-max px-2.5 sm:px-3.5">
+                    {items.map((hour, index) => {
+                        const isActive = hour === active;
+                        return (
+                            <li key={hour.time} data-index={index} style={{width: COLUMN, "--i": Math.min(index, 8)} as CSSProperties}>
+                                <button
+                                    type="button"
+                                    tabIndex={-1}
+                                    aria-pressed={isActive}
+                                    onPointerEnter={(event) => event.pointerType === "mouse" && setActiveIndex(index)}
+                                    onClick={() => setActiveIndex(index)}
+                                    className={cn(
+                                        "flex w-full flex-col items-center gap-2.5 rounded-2xl py-2.5 transition-colors duration-(--duration-fast)",
+                                        isActive ? "bg-white/[0.06] ring-1 ring-white/10" : "hover:bg-white/[0.03]",
+                                    )}
+                                >
+                                    <span className={cn("text-[11px] font-light tracking-[0.12em] tabular first-letter:uppercase", index === 0 ? "text-brand" : "text-muted-foreground")}>
                                         {timeLabel(hour, index)}
                                     </span>
-                                    <WeatherIcon code={hour.weatherCode} isDay={hour.isDay} size={32} isAnimated={index === 0 || index === activeIndex}/>
-                                    <span className="sr-only">
-                                        {roundTemp(hour.temperature)}°, {t("hourly.precipitation")} {hour.precipitationProbability}%
-                                    </span>
-                                </li>
-                            ))}
-                        </ol>
-
-                        {/* Entrance and the "now" pulse animate HTML boxes, not shapes inside the SVG, so they stay on the GPU. */}
-                        <div className="relative" style={{width, height: CHART_HEIGHT}}>
-                        {chart.points[0] && (
-                            <span
-                                aria-hidden
-                                className="absolute size-[18px] -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full bg-brand/30"
-                                style={{left: chart.points[0].x, top: chart.points[0].y}}
-                            />
-                        )}
-                        <svg aria-hidden width={width} height={CHART_HEIGHT} className="relative block animate-fade-in overflow-visible">
-                            <defs>
-                                <linearGradient id={`${uid}-line`} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={width} y2="0">
-                                    {chart.stops.map((stop) => <stop key={stop.offset} offset={stop.offset} stopColor={stop.color}/>)}
-                                </linearGradient>
-                                <linearGradient id={`${uid}-area`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0" stopColor="#ffffff" stopOpacity=".22"/>
-                                    <stop offset="1" stopColor="#ffffff" stopOpacity="0"/>
-                                </linearGradient>
-                            </defs>
-                            <path d={chart.area} fill={`url(#${uid}-area)`}/>
-                            <path d={chart.line} fill="none" stroke={`url(#${uid}-line)`} strokeWidth="3" strokeLinecap="round" pathLength={1} strokeDasharray="1" className="animate-draw"/>
-                            {chart.points.map((point, index) => {
-                                const isActive = index === activeIndex;
-                                return (
-                                    <g key={items[index].time}>
-                                        <circle
-                                            cx={point.x}
-                                            cy={point.y}
-                                            r={isActive ? 6 : index === 0 ? 4.5 : 3}
-                                            fill={index === 0 ? "var(--brand)" : "#fff"}
-                                            stroke={isActive ? temperatureColor(items[index].temperature) : "none"}
-                                            strokeWidth="3"
-                                        />
-                                        <text x={point.x} y={point.y - 12} textAnchor="middle" className="fill-foreground text-[13px] font-semibold tabular">
-                                            {roundTemp(items[index].temperature)}°
-                                        </text>
-                                    </g>
-                                );
-                            })}
-                        </svg>
-                        </div>
-
-                        <ol aria-hidden className="relative grid pb-2" style={{gridTemplateColumns: `repeat(${items.length}, ${COLUMN}px)`}}>
-                            {items.map((hour, index) => (
-                                <li key={hour.time} className="flex flex-col items-center gap-1">
-                                    <div className="flex w-2.5 items-end overflow-hidden rounded-full bg-white/8" style={{height: BAR_HEIGHT}}>
-                                        <div
-                                            className="w-full origin-bottom animate-[grow-up_700ms_var(--ease-out)_both] rounded-full bg-gradient-to-t from-accent/60 to-accent"
-                                            style={{height: `${Math.max(hour.precipitationProbability, 0)}%`, animationDelay: `${400 + index * 20}ms`}}
-                                        />
-                                    </div>
-                                    <span className={hour.precipitationProbability >= 20 ? "flex items-center gap-0.5 text-[11px] font-semibold text-accent tabular" : "text-[11px] text-subtle-foreground tabular"}>
-                                        {hour.precipitationProbability >= 20 && <Droplet className="size-2.5 fill-current"/>}
+                                    <WeatherGlyph code={hour.weatherCode} isDay={hour.isDay} size={22} className={cn(index === 0 && "text-brand")}/>
+                                    <span className="text-[15px] font-light tabular">{formatTemp(hour.temperature)}</span>
+                                    <span className={cn("h-3 text-[9.5px] font-light tracking-[0.08em] tabular", hour.precipitationProbability >= 20 ? "text-accent" : "text-transparent")}>
                                         {hour.precipitationProbability}%
                                     </span>
-                                </li>
-                            ))}
-                        </ol>
-
-                        {active && (
-                            <div
-                                role="status"
-                                className="pointer-events-none absolute top-1 z-10 rounded-2xl border border-glass-border bg-surface p-3 text-xs shadow-2xl transition-[left] duration-150 ease-(--ease-out)"
-                                style={{left: tooltipLeft, width: TOOLTIP_WIDTH}}
-                            >
-                                <p className="font-semibold first-letter:uppercase">
-                                    {formatWeekday(active.time, timezone, locale, "short")}, <span className="tabular">{formatClock(active.time, timezone, locale)}</span>
-                                </p>
-                                <div className="mt-1.5 flex items-center gap-2">
-                                    <WeatherIcon code={active.weatherCode} isDay={active.isDay} size={30}/>
-                                    <span className="font-display text-2xl font-semibold tabular">{formatTemp(active.temperature)}</span>
-                                </div>
-                                <p className="mt-1 truncate text-muted-foreground">{t(weatherLabelKey(active.weatherCode))}</p>
-                                <dl className="mt-2 space-y-1 text-muted-foreground">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <dt className="flex items-center gap-1"><Thermometer className="size-3"/>{t("hourly.feelsLike")}</dt>
-                                        <dd className="font-semibold text-foreground tabular">{formatTemp(active.apparentTemperature)}</dd>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <dt className="flex items-center gap-1"><Wind className="size-3"/>{t("hourly.wind")}</dt>
-                                        <dd className="font-semibold text-foreground tabular">{Math.round(active.windSpeed)} {t("details.kmh")}</dd>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <dt className="flex items-center gap-1"><Droplet className="size-3"/>{t("hourly.precipitation")}</dt>
-                                        <dd className="font-semibold text-accent tabular">{active.precipitationProbability}%</dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ol>
             </div>
-            <p id={`${uid}-hint`} className="mt-2 text-[11px] text-subtle-foreground">{t("hourly.hint")}</p>
+
+            {active && (
+                <p aria-live="polite" className="mt-1 truncate border-t border-white/[0.07] px-4 pt-2.5 text-[11px] font-light tracking-[0.06em] text-muted-foreground sm:px-5">
+                    <span className="text-foreground first-letter:uppercase">{formatWeekday(active.time, timezone, locale, "short")}, {formatClock(active.time, timezone, locale)}</span>
+                    {" · "}{t(weatherLabelKey(active.weatherCode))}
+                    {" · "}{t("hourly.feelsLike")} {formatTemp(active.apparentTemperature)}
+                    {" · "}{t("hourly.wind")} {Math.round(active.windSpeed)} {t("details.kmh")}
+                    {" · "}<span className="text-accent">{active.precipitationProbability}%</span>
+                </p>
+            )}
         </Card>
     );
 });

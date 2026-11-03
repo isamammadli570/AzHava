@@ -40,4 +40,12 @@ function DropdownMenuRadioItem({className, children, ...props}: ComponentProps<t
     );
 }
 
-export {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem};
+function DropdownMenuLabel({className, ...props}: ComponentProps<typeof DropdownMenuPrimitive.Label>) {
+    return <DropdownMenuPrimitive.Label className={cn("section-label px-3 pt-2 pb-1", className)} {...props}/>;
+}
+
+function DropdownMenuSeparator({className, ...props}: ComponentProps<typeof DropdownMenuPrimitive.Separator>) {
+    return <DropdownMenuPrimitive.Separator className={cn("mx-2 my-1.5 h-px bg-white/10", className)} {...props}/>;
+}
+
+export {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuRadioGroup, DropdownMenuRadioItem};

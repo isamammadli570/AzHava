@@ -42,3 +42,23 @@ export const scaleY = (value: number, min: number, max: number, top: number, bot
     if (max === min) return (top + bottom) / 2;
     return bottom - ((value - min) / (max - min)) * (bottom - top);
 };
+
+/**
+ * Round axis values covering [min, max] with about `count` steps (1, 2, 2.5 or 5 times a power of ten), so a chart's
+ * gridlines fall on numbers people read at a glance.
+ */
+export const niceTicks = (min: number, max: number, count = 4): number[] => {
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return [];
+    if (max === min) {
+        max += 1;
+        min -= 1;
+    }
+    const rough = (max - min) / count;
+    const power = 10 ** Math.floor(Math.log10(rough));
+    const step = [1, 2, 2.5, 5, 10].map((factor) => factor * power).find((candidate) => candidate >= rough) ?? 10 * power;
+    const start = Math.floor(min / step) * step;
+    const end = Math.ceil(max / step) * step;
+    const ticks: number[] = [];
+    for (let value = start; value <= end + step / 2; value += step) ticks.push(Math.round(value * 1000) / 1000);
+    return ticks;
+};

@@ -1,8 +1,9 @@
 import {memo} from "react";
-import {Droplets, Eye, Thermometer, Umbrella, SunMedium} from "lucide-react";
+import {ChartNoAxesColumn, Droplets, Eye, Thermometer, Umbrella, SunMedium} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import type {AirQualityCurrent} from "@/api/airQuality.api";
 import type {CurrentWeather} from "@/api/forecast.api";
+import {compareWithYesterday} from "@/helpers/advice";
 import {formatTemp, roundTemp, uvLevel, UV_LEVEL} from "@/helpers/format";
 import {precipitationTotal, type DailyPoint, type HourlyPoint} from "@/helpers/forecast";
 import {DetailCard, Meter, ScaleMarker} from "@/pages/WeatherPage/widgets/DetailsGrid/DetailCard";
@@ -10,6 +11,8 @@ import {WindCard} from "@/pages/WeatherPage/widgets/DetailsGrid/WindCard";
 import {PressureCard} from "@/pages/WeatherPage/widgets/DetailsGrid/PressureCard";
 import {SunCard} from "@/pages/WeatherPage/widgets/DetailsGrid/SunCard";
 import {AirQualityCard} from "@/pages/WeatherPage/widgets/DetailsGrid/AirQualityCard";
+import {cn} from "@/lib/utils";
+import {MoonCard} from "@/pages/WeatherPage/widgets/DetailsGrid/MoonCard";
 
 const UV_GRADIENT = `linear-gradient(90deg, var(--uv-low), var(--uv-moderate), var(--uv-high), var(--uv-very-high), var(--uv-extreme))`;
 const UV_COLOR = {
@@ -29,14 +32,21 @@ const visibilityLevel = (meters: number): "clear" | "moderate" | "poor" => {
 type DetailsGridProps = {
     current: CurrentWeather;
     today: DailyPoint | undefined;
+    yesterday: DailyPoint | null;
     hours: HourlyPoint[];
     timezone: string;
+    utcOffset: number;
+    latitude: number;
+    longitude: number;
     air: AirQualityCurrent | undefined;
     isAirLoading: boolean;
 };
 
-/** The "everything else" tiles under the hourly chart; each one rises in as it scrolls into view. */
-export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoading}: DetailsGridProps) => {
+/**
+ * The "everything else" tiles: small squares paired two by two, wide tiles (wind, moon, air) across the row.
+ * `grid-flow-row-dense` back-fills any hole the wide tiles leave. Each tile rises in as it scrolls into view.
+ */
+export const DetailsGrid = memo(({current, today, yesterday, hours, timezone, utcOffset, latitude, longitude, air, isAirLoading}: DetailsGridProps) => {
     const {t} = useTranslation("weather");
     const feelsDelta = current.apparent_temperature - current.temperature_2m;
     const feelsKey = Math.abs(feelsDelta) < 2 ? "feelsSame" : feelsDelta > 0 ? "feelsWarmer" : "feelsColder";
@@ -44,20 +54,34 @@ export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoa
     const next24 = hours.slice(0, 24);
     const next12 = hours.slice(0, 12);
     const visibilityKm = current.visibility / 1000;
+    const comparison = today && yesterday ? compareWithYesterday(today.max, yesterday.max) : null;
 
     return (
         <section aria-labelledby="details-title" className="[grid-area:details]">
             <h2 id="details-title" className="sr-only">{t("details.title")}</h2>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+            <div className="grid grid-flow-row-dense grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 <DetailCard
                     icon={<Thermometer/>}
                     title={t("details.feelsLike")}
                     value={roundTemp(current.apparent_temperature)}
                     unit="°"
                     caption={t(`details.${feelsKey}`)}
-                    info={t("details.info.feelsLike")}
+                    sheet="conditions"
+                    sheetMode="feels"
                 >
                     <Meter value={((current.apparent_temperature + 20) / 65) * 100} barClassName="bg-gradient-to-r from-accent via-brand to-danger"/>
+                </DetailCard>
+
+                <DetailCard
+                    icon={<SunMedium/>}
+                    title={t("details.uv")}
+                    value={current.uv_index}
+                    decimals={current.uv_index < 10 ? 1 : 0}
+                    caption={t(`details.uvAdvice.${uv}`)}
+                    sheet="uv"
+                >
+                    <p className="mb-3 text-[11px] font-light tracking-[0.24em] uppercase" style={{color: UV_COLOR[uv]}}>{t(`details.uvLevels.${uv}`)}</p>
+                    <ScaleMarker position={(current.uv_index / 11) * 100} gradient={UV_GRADIENT}/>
                 </DetailCard>
 
                 <DetailCard
@@ -66,26 +90,15 @@ export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoa
                     value={current.relative_humidity_2m}
                     unit="%"
                     caption={t("details.dewPoint", {temp: formatTemp(current.dew_point_2m)})}
-                    info={t("details.info.humidity")}
+                    sheet="humidity"
                 >
                     <Meter value={current.relative_humidity_2m} barClassName="bg-gradient-to-r from-accent/60 to-accent"/>
                 </DetailCard>
 
-                <WindCard speed={current.wind_speed_10m} gusts={current.wind_gusts_10m} direction={current.wind_direction_10m}/>
+                <WindCard className="col-span-2" speed={current.wind_speed_10m} gusts={current.wind_gusts_10m} direction={current.wind_direction_10m}/>
 
                 <PressureCard pressure={current.pressure_msl}/>
 
-                <DetailCard
-                    icon={<SunMedium/>}
-                    title={t("details.uv")}
-                    value={current.uv_index}
-                    decimals={current.uv_index < 10 ? 1 : 0}
-                    caption={t(`details.uvAdvice.${uv}`)}
-                    info={t("details.info.uv")}
-                >
-                    <p className="mb-2 text-sm font-semibold" style={{color: UV_COLOR[uv]}}>{t(`details.uvLevels.${uv}`)}</p>
-                    <ScaleMarker position={(current.uv_index / 11) * 100} gradient={UV_GRADIENT}/>
-                </DetailCard>
 
                 <DetailCard
                     icon={<Umbrella/>}
@@ -94,7 +107,7 @@ export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoa
                     decimals={1}
                     unit={t("details.mm")}
                     caption={`${t("details.next24h")} · ${t("details.chance", {chance: today?.precipitationProbability ?? 0})}`}
-                    info={t("details.info.precipitation")}
+                    sheet="conditions"
                 >
                     <div aria-hidden className="flex h-10 items-end gap-1">
                         {next12.map((hour, index) => (
@@ -107,7 +120,7 @@ export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoa
                     </div>
                 </DetailCard>
 
-                {today && <SunCard className="xl:col-span-2" sunrise={today.sunrise} sunset={today.sunset} daylight={today.daylight} timezone={timezone}/>}
+                {today && <SunCard sunrise={today.sunrise} sunset={today.sunset} daylight={today.daylight} timezone={timezone}/>}
 
                 <DetailCard
                     icon={<Eye/>}
@@ -116,13 +129,54 @@ export const DetailsGrid = memo(({current, today, hours, timezone, air, isAirLoa
                     decimals={visibilityKm >= 10 ? 0 : 1}
                     unit={t("details.km")}
                     caption={t(`details.visibilityLevels.${visibilityLevel(current.visibility)}`)}
-                    info={t("details.info.visibility")}
+                    sheet="visibility"
                 >
                     <Meter value={(current.visibility / 30_000) * 100} barClassName="bg-gradient-to-r from-white/40 to-white"/>
                 </DetailCard>
 
-                <AirQualityCard className="col-span-2 xl:col-span-3" air={air} isLoading={isAirLoading}/>
+                <MoonCard className="col-span-2" latitude={latitude} longitude={longitude} utcOffset={utcOffset} timezone={timezone}/>
+
+                {comparison && yesterday && today && (
+                    <DetailCard
+                        icon={<ChartNoAxesColumn/>}
+                        title={t("details.vsYesterday.title")}
+                        value={`${comparison.trend === "colder" ? "−" : comparison.trend === "warmer" ? "+" : ""}${comparison.delta}°`}
+                        caption={t(`details.vsYesterday.${comparison.trend === "warmer" ? "higher" : comparison.trend === "colder" ? "lower" : "same"}`, {delta: comparison.delta})}
+                        sheet="conditions"
+                    >
+                        <ComparisonBars yesterday={yesterday.max} today={today.max}/>
+                    </DetailCard>
+                )}
+
+                <AirQualityCard className="col-span-2 lg:col-span-4" air={air} isLoading={isAirLoading}/>
             </div>
         </section>
     );
 });
+
+type ComparisonBarsProps = {yesterday: number; today: number};
+
+/** The highs of yesterday and today as two bars on a shared scale, today in the warm accent. */
+const ComparisonBars = ({yesterday, today}: ComparisonBarsProps) => {
+    const {t} = useTranslation("weather");
+    const low = Math.min(yesterday, today) - 6;
+    const span = Math.max(yesterday, today) - low || 1;
+    const rows = [
+        {label: t("details.vsYesterday.yesterday"), value: yesterday, className: "bg-white/35"},
+        {label: t("details.vsYesterday.today"), value: today, className: "bg-gradient-to-r from-accent to-brand"},
+    ];
+
+    return (
+        <div className="space-y-1.5">
+            {rows.map((row) => (
+                <div key={row.label} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="w-12 shrink-0 truncate">{row.label}</span>
+                    <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/20">
+                        <span className={cn("block h-full origin-left animate-bar-grow rounded-full", row.className)} style={{width: `${((row.value - low) / span) * 100}%`}}/>
+                    </span>
+                    <span className="w-8 shrink-0 text-right text-foreground tabular">{formatTemp(row.value)}</span>
+                </div>
+            ))}
+        </div>
+    );
+};

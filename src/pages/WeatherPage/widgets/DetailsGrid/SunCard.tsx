@@ -30,7 +30,7 @@ export const SunCard = ({sunrise, sunset, daylight, timezone, className, style}:
     const {hours, minutes} = splitDuration(daylight);
 
     return (
-        <DetailCard style={style} className={className} icon={<Sunrise/>} title={t("details.sun")} caption={t("details.daylight", {hours, minutes})} info={t("details.info.sun")}>
+        <DetailCard style={style} className={className} icon={<Sunrise/>} title={t("details.sun")} caption={t("details.daylight", {hours, minutes})} sheet="sun">
             <div className="relative w-full max-w-72 self-center">
             {/* The pulsing glow is an HTML element over the SVG: pulsing a shape inside the SVG would repaint it every frame. */}
             <span

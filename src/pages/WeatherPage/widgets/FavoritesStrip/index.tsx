@@ -6,7 +6,7 @@ import {placeRoute} from "@/helpers/place";
 import {useGetCurrentBatch, usePrefetchForecast} from "@/hooks/forecast";
 import {useFavorites} from "@/hooks/useFavorites";
 import {usePlaceLabel} from "@/hooks/usePlaceLabel";
-import {WeatherIcon} from "@/widgets/WeatherIcon";
+import {WeatherGlyph} from "@/widgets/WeatherGlyph";
 import {cn, staggerIndex} from "@/lib/utils";
 
 /** Quick switcher between favourite places with their current temperature. Hidden until something is starred. */
@@ -34,12 +34,12 @@ export const FavoritesStrip = () => {
                                 onPointerEnter={() => prefetchForecast(place)}
                                 className={({isActive}) =>
                                     cn(
-                                        "flex h-10 items-center gap-2 rounded-full pr-3.5 pl-2 text-sm font-medium transition-colors duration-(--duration-fast) focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                                        isActive ? "bg-white/90 text-slate-900 hover:bg-white" : "glass hover:bg-glass-hover",
+                                        "flex h-9 items-center gap-2 rounded-full pr-3.5 pl-3 text-[12px] font-light tracking-[0.1em] transition-colors duration-(--duration-fast) focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                                        isActive ? "bg-brand-soft text-foreground ring-1 ring-[rgb(var(--tint)/0.4)]" : "glass hover:bg-glass-hover",
                                     )
                                 }
                             >
-                                {snapshot ? <WeatherIcon code={snapshot.weather_code} isDay={snapshot.is_day === 1} size={26} isAnimated={false}/> : <span className="size-[26px]"/>}
+                                {snapshot ? <WeatherGlyph code={snapshot.weather_code} isDay={snapshot.is_day === 1} size={18}/> : <span className="size-[18px]"/>}
                                 <span className="max-w-36 truncate">{placeName(place)}</span>
                                 <span className="font-semibold tabular">{formatTemp(snapshot?.temperature_2m)}</span>
                             </NavLink>

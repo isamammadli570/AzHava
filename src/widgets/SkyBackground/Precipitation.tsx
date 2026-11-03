@@ -1,147 +1,43 @@
-import {useEffect, useRef} from "react";
 import type {Intensity} from "@/helpers/weather";
-import {useReducedMotion} from "@/hooks/useReducedMotion";
-import {isLowQuality, onQualityChange} from "@/services/quality";
 
 export type PrecipitationKind = "rain" | "snow";
 
-type Particle = {x: number; y: number; speed: number; size: number; phase: number; bucket: number};
-
-const DENSITY: Record<PrecipitationKind, readonly number[]> = {rain: [0, 120, 220, 340], snow: [0, 80, 140, 210]};
-
-/** Particles share a few opacity levels, so each level is drawn as one path with one stroke/fill call. */
-const ALPHAS: Record<PrecipitationKind, readonly number[]> = {rain: [0.18, 0.3, 0.46], snow: [0.45, 0.7, 0.95]};
-
-/**
- * Particles are tuned for a 1440 px wide screen and thinned on phones, so a small screen is not a white wall;
- * the light quality preset halves them again.
- */
-const particleCount = (kind: PrecipitationKind, intensity: Intensity, width: number): number =>
-    Math.round(DENSITY[kind][intensity] * Math.min(1.2, Math.max(0.35, width / 1440)) * (isLowQuality() ? 0.5 : 1));
-
-/** Mobile browsers fire resize when the address bar slides; a change this small is not worth rebuilding the canvas. */
-const MIN_HEIGHT_CHANGE = 160;
-
-const spawn = (kind: PrecipitationKind, width: number, height: number, anywhere: boolean): Particle => {
-    const bucket = Math.floor(Math.random() * 3);
-    return {
-        x: Math.random() * (width + 200) - 100,
-        y: anywhere ? Math.random() * height : -20 - Math.random() * 80,
-        // Brighter (nearer) drops fall faster and are larger: a cheap depth illusion.
-        speed: kind === "rain" ? 800 + bucket * 280 + Math.random() * 200 : 25 + bucket * 22 + Math.random() * 20,
-        size: kind === "rain" ? 10 + bucket * 6 + Math.random() * 6 : 1 + bucket * 0.9 + Math.random() * 0.8,
-        phase: Math.random() * Math.PI * 2,
-        bucket,
-    };
+/** Deterministic pseudo-random numbers, so streaks sit in the same place on every render. */
+const seeded = (seed: number) => () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
 };
+
+const random = seeded(11);
+// Every element starts somewhere above the screen (top) and travels past the bottom. Variety comes from these start
+// positions, not from per-element timing: see `.sky-rain` / `.sky-snow` in index.css for why.
+const DROPS = Array.from({length: 40}, () => ({left: random() * 115 - 5, top: -30 - random() * 100, length: 9 + random() * 9}));
+const FLAKES = Array.from({length: 36}, () => ({left: random() * 105, top: -random() * 100, size: 1.5 + random() * 2.5}));
+
+const COUNT: Record<PrecipitationKind, readonly number[]> = {rain: [0, 16, 26, 40], snow: [0, 16, 26, 36]};
 
 type PrecipitationProps = {kind: PrecipitationKind | null; intensity: Intensity; isStorm: boolean};
 
-/**
- * Canvas rain or snow. Rendered at device-pixel ratio 1 (streaks do not need retina sharpness, and it is a quarter of
- * the pixels on a 2× phone), batched into three draw calls per frame, paused while the tab is hidden, and a single
- * static frame under reduced motion.
- */
+/** Background rain or snow as plain elements moved with CSS transforms, entirely on the GPU. */
 export const Precipitation = ({kind, intensity, isStorm}: PrecipitationProps) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const isReduced = useReducedMotion();
+    if (!kind || intensity === 0) return null;
+    const count = COUNT[kind][intensity];
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext("2d", {alpha: true});
-        if (!canvas || !context || !kind || intensity === 0) return;
+    if (kind === "snow") {
+        return (
+            <div className="absolute inset-0">
+                {FLAKES.slice(0, count).map((flake, index) => (
+                    <span key={index} className="sky-snow" style={{left: `${flake.left}%`, top: `${flake.top}vh`, width: flake.size, height: flake.size}}/>
+                ))}
+            </div>
+        );
+    }
 
-        let width = 0;
-        let height = 0;
-        let particles: Particle[] = [];
-        let frame = 0;
-        let last = performance.now();
-        const wind = kind === "rain" ? (isStorm ? 0.32 : 0.16) : 0;
-        const alphas = ALPHAS[kind];
-
-        const rebuild = () => {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-            particles = Array.from({length: particleCount(kind, intensity, width)}, () => spawn(kind, width, height, true));
-        };
-
-        const resize = () => {
-            if (window.innerWidth === width && Math.abs(window.innerHeight - height) < MIN_HEIGHT_CHANGE) return;
-            rebuild();
-        };
-
-        const step = (delta: number) => {
-            for (const particle of particles) {
-                particle.y += particle.speed * delta;
-                if (kind === "rain") particle.x += particle.speed * wind * delta;
-                else {
-                    particle.phase += delta * 1.4;
-                    particle.x += Math.sin(particle.phase) * 18 * delta;
-                }
-                if (particle.y - particle.size > height || particle.x > width + 120) Object.assign(particle, spawn(kind, width, height, false));
-            }
-        };
-
-        const draw = () => {
-            context.clearRect(0, 0, width, height);
-            context.lineCap = "round";
-            context.lineWidth = 1.1;
-            alphas.forEach((alpha, bucket) => {
-                context.beginPath();
-                for (const particle of particles) {
-                    if (particle.bucket !== bucket) continue;
-                    if (kind === "rain") {
-                        context.moveTo(particle.x, particle.y);
-                        context.lineTo(particle.x - particle.size * wind, particle.y - particle.size);
-                    } else {
-                        context.moveTo(particle.x + particle.size, particle.y);
-                        context.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                    }
-                }
-                if (kind === "rain") {
-                    context.strokeStyle = `rgba(205, 225, 255, ${alpha})`;
-                    context.stroke();
-                } else {
-                    context.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-                    context.fill();
-                }
-            });
-        };
-
-        const tick = (time: number) => {
-            // Clamp the step so a backgrounded tab does not teleport every particle on return.
-            const delta = Math.min(0.05, (time - last) / 1000);
-            last = time;
-            step(delta);
-            draw();
-            frame = requestAnimationFrame(tick);
-        };
-
-        const onVisibility = () => {
-            cancelAnimationFrame(frame);
-            if (document.visibilityState === "visible" && !isReduced) {
-                last = performance.now();
-                frame = requestAnimationFrame(tick);
-            }
-        };
-
-        rebuild();
-        if (isReduced) draw();
-        else frame = requestAnimationFrame(tick);
-
-        window.addEventListener("resize", resize);
-        document.addEventListener("visibilitychange", onVisibility);
-        const stopQualityWatch = onQualityChange(rebuild);
-        return () => {
-            cancelAnimationFrame(frame);
-            window.removeEventListener("resize", resize);
-            document.removeEventListener("visibilitychange", onVisibility);
-            stopQualityWatch();
-            context.clearRect(0, 0, width, height);
-        };
-    }, [kind, intensity, isStorm, isReduced]);
-
-    return <canvas ref={canvasRef} className="absolute inset-0 size-full"/>;
+    return (
+        <div className={isStorm ? "absolute inset-0 rotate-[16deg] scale-125" : "absolute inset-0 rotate-[9deg] scale-115"}>
+            {DROPS.slice(0, count).map((drop, index) => (
+                <span key={index} className="sky-rain" style={{left: `${drop.left}%`, top: `${drop.top}vh`, height: `${drop.length}vh`}}/>
+            ))}
+        </div>
+    );
 };

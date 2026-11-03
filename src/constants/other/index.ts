@@ -3,6 +3,8 @@ export const QUERY_KEYS = {
     CURRENT_BATCH: "current-batch",
     AIR_QUALITY: "air-quality",
     GEOCODING: "geocoding",
+    RADAR: "radar",
+    HOURLY_DETAIL: "hourly-detail",
 } as const;
 
 /** Forecast data changes every 15 minutes upstream; refetching more often only burns the free quota. */
@@ -17,3 +19,6 @@ export type DailyRange = (typeof DAILY_RANGES)[number];
 export const SEARCH_MIN_LENGTH = 2;
 export const SEARCH_DEBOUNCE_MS = 300;
 export const SEARCH_RESULT_LIMIT = 8;
+
+/** One lightning cycle in seconds; the hero bolt and the sky flash share it (and `.gs-bolt`/`.sky-lightning` in index.css). */
+export const LIGHTNING_PERIOD_S = 9;

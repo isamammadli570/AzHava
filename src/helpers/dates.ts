@@ -85,8 +85,26 @@ export const formatFullDate = (unixSeconds: number, timeZone: string, locale: st
     return `${table.weekdays[weekday]}, ${day} ${table.months[month]}`;
 };
 
+/** Hour of the day (0–23) of a moment in the place's own time zone. */
+export const localHour = (unixSeconds: number, timeZone: string): number =>
+    Number(formatter("en-GB", timeZone, {hour: "2-digit", hourCycle: "h23"}).format(toDate(unixSeconds))) % 24;
+
 /** Calendar day (YYYY-MM-DD) of a moment as seen in the place's own time zone. */
 export const localDateKey = (unixSeconds: number, timeZone: string): string =>
     formatter("en-CA", timeZone, {year: "numeric", month: "2-digit", day: "2-digit"}).format(toDate(unixSeconds));
 
 export const nowSeconds = (): number => Math.floor(Date.now() / 1000);
+
+/** Standalone month names (the month on its own, as in a calendar header) where the fallback tables hold genitives. */
+const STANDALONE_MONTHS: Record<string, string[]> = {
+    ru: ["январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"],
+};
+
+/** "Noyabr 2026" for a calendar header (year and month given directly, no time zone involved). */
+export const formatMonthYear = (year: number, month: number, locale: string): string => {
+    const table = fallbackTable(locale);
+    const name = table
+        ? (STANDALONE_MONTHS[locale.split("-")[0]] ?? table.months)[month]
+        : formatter(locale, "UTC", {month: "long"}).formatToParts(new Date(Date.UTC(year, month, 15))).find((part) => part.type === "month")?.value ?? "";
+    return `${name.charAt(0).toUpperCase()}${name.slice(1)} ${year}`;
+};

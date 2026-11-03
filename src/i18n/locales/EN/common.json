@@ -20,7 +20,8 @@
         "locate": "Use my location",
         "locating": "Finding you…",
         "locationDenied": "Location access was not allowed",
-        "recent": "Recently viewed"
+        "recent": "Recently viewed",
+        "open": "Search a city"
     },
     "language": "Language",
     "favorites": {
@@ -70,5 +71,18 @@
         "ready": "A new version is ready",
         "reload": "Reload"
     },
-    "lastData": "Last data: {{time}}"
+    "lastData": "Last data: {{time}}",
+    "brandSubtitle": "Weather",
+    "menu": {
+        "open": "Menu",
+        "language": "Language",
+        "season": "Season",
+        "auto": "Automatic"
+    },
+    "seasons": {
+        "winter": "Winter",
+        "spring": "Spring",
+        "summer": "Summer",
+        "autumn": "Autumn"
+    }
 }

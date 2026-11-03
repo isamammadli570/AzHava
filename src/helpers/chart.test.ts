@@ -1,4 +1,4 @@
-import {areaPath, scaleY, smoothPath} from "@/helpers/chart";
+import {areaPath, niceTicks, scaleY, smoothPath} from "@/helpers/chart";
 
 describe("smoothPath", () => {
     it("handles empty and single-point input", () => {
@@ -26,5 +26,18 @@ describe("scaleY", () => {
         expect(scaleY(10, 0, 10, 0, 100)).toBe(0);
         expect(scaleY(0, 0, 10, 0, 100)).toBe(100);
         expect(scaleY(5, 5, 5, 0, 100)).toBe(50);
+    });
+});
+
+describe("niceTicks", () => {
+    it("covers the range with round steps", () => {
+        expect(niceTicks(3, 17)).toEqual([0, 5, 10, 15, 20]);
+        expect(niceTicks(0, 100)).toEqual([0, 25, 50, 75, 100]);
+    });
+
+    it("widens a flat range", () => {
+        const ticks = niceTicks(1013, 1013);
+        expect(ticks[0]).toBeLessThan(1013);
+        expect(ticks[ticks.length - 1]).toBeGreaterThan(1013);
     });
 });

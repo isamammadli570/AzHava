@@ -2,15 +2,15 @@ import {clamp} from "@/helpers/format";
 
 type Stop = [temperature: number, rgb: [number, number, number]];
 
-/** Cold violet-blue through teal and green to amber and red; tuned to read on a dark glass card. */
+/** Indigo and cyan for frost, a soft green for mild days, then yellow, orange and red: calm tones for slate glass. */
 const TEMPERATURE_STOPS: Stop[] = [
-    [-20, [139, 152, 255]],
-    [-5, [96, 165, 250]],
-    [5, [94, 234, 212]],
-    [14, [163, 230, 53]],
-    [22, [250, 204, 21]],
-    [30, [251, 146, 60]],
-    [40, [239, 68, 68]],
+    [-20, [125, 122, 255]],
+    [-5, [100, 210, 255]],
+    [5, [118, 214, 196]],
+    [13, [158, 214, 140]],
+    [20, [245, 214, 82]],
+    [28, [255, 159, 10]],
+    [38, [255, 69, 58]],
 ];
 
 export const temperatureColor = (temperature: number): string => {

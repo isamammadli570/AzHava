@@ -1,3 +1,5 @@
+import {seasonFor, type Season} from "@/helpers/season";
+
 export const CONDITION = {
     CLEAR: "clear",
     PARTLY_CLOUDY: "partlyCloudy",
@@ -42,22 +44,30 @@ export const intensityFromCode = (code: number): Intensity => {
     return 0;
 };
 
-export type Scene = {condition: Condition; isDay: boolean; intensity: Intensity; isWindy: boolean};
+export type Scene = {condition: Condition; isDay: boolean; intensity: Intensity; isWindy: boolean; season: Season};
 
 /** Above this sustained speed (km/h) the sky gets wind streaks. */
 export const WINDY_KMH = 25;
 
-export const sceneFor = (code: number, isDay: boolean, windSpeed = 0): Scene => ({
+export const sceneFor = (code: number, isDay: boolean, windSpeed = 0, season: Season = "autumn"): Scene => ({
     condition: conditionFromCode(code),
     isDay,
     intensity: intensityFromCode(code),
     isWindy: windSpeed >= WINDY_KMH,
+    season,
 });
 
-export const isSameScene = (a: Scene, b: Scene): boolean => a.condition === b.condition && a.isDay === b.isDay && a.intensity === b.intensity && a.isWindy === b.isWindy;
+export const isSameScene = (a: Scene, b: Scene): boolean =>
+    a.condition === b.condition && a.isDay === b.isDay && a.intensity === b.intensity && a.isWindy === b.isWindy && a.season === b.season;
 
-/** Night-time clear sky is the neutral backdrop while nothing is loaded yet. */
-export const DEFAULT_SCENE: Scene = {condition: CONDITION.CLEAR, isDay: false, intensity: 0, isWindy: false};
+/** Night-time clear sky in the visitor's own season is the neutral backdrop while nothing is loaded yet. */
+export const DEFAULT_SCENE: Scene = {
+    condition: CONDITION.CLEAR,
+    isDay: false,
+    intensity: 0,
+    isWindy: false,
+    season: seasonFor(Date.now() / 1000, Intl.DateTimeFormat().resolvedOptions().timeZone, 40),
+};
 
 export const SKY_VARIANTS = ["clear", "partlyCloudy", "cloudy", "fog", "rain", "thunder", "snow"] as const;
 export type SkyVariant = (typeof SKY_VARIANTS)[number];

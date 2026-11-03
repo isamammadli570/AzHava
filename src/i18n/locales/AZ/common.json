@@ -20,7 +20,8 @@
         "locate": "Yerimi tap",
         "locating": "Yeriniz təyin olunur…",
         "locationDenied": "Yer məlumatına icazə verilmədi",
-        "recent": "Son baxılanlar"
+        "recent": "Son baxılanlar",
+        "open": "Şəhər axtar"
     },
     "language": "Dil",
     "favorites": {
@@ -70,5 +71,18 @@
         "ready": "Yeni versiya hazırdır",
         "reload": "Yenilə"
     },
-    "lastData": "Son məlumat: {{time}}"
+    "lastData": "Son məlumat: {{time}}",
+    "brandSubtitle": "Hava proqnozu",
+    "menu": {
+        "open": "Menyu",
+        "language": "Dil",
+        "season": "Fəsil",
+        "auto": "Avtomatik"
+    },
+    "seasons": {
+        "winter": "Qış",
+        "spring": "Yaz",
+        "summer": "Yay",
+        "autumn": "Payız"
+    }
 }

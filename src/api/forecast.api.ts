@@ -63,6 +63,19 @@ export type ForecastResponse = LocationMeta & {
     daily: DailySeries;
 };
 
+/** Every hour of ten days (and yesterday) with all the readings the detail sheets chart. */
+export type HourlyDetailSeries = HourlySeries & {
+    wind_gusts_10m: number[];
+    wind_direction_10m: number[];
+    uv_index: (number | null)[];
+    relative_humidity_2m: number[];
+    dew_point_2m: number[];
+    visibility: (number | null)[];
+    pressure_msl: number[];
+};
+
+export type HourlyDetailResponse = LocationMeta & {hourly: HourlyDetailSeries};
+
 export type CurrentSnapshot = Pick<CurrentWeather, "time" | "temperature_2m" | "weather_code" | "is_day">;
 export type CurrentSnapshotResponse = LocationMeta & {current: CurrentSnapshot};
 
@@ -97,6 +110,22 @@ export const getForecast = ({latitude, longitude}: Coordinates) =>
             // Yesterday comes first in `daily`, so the page can say "warmer than yesterday".
             past_days: 1,
         },
+    });
+
+const DETAIL_HOURLY_FIELDS = [
+    ...HOURLY_FIELDS, "wind_gusts_10m", "wind_direction_10m", "uv_index", "relative_humidity_2m", "dew_point_2m", "visibility", "pressure_msl",
+];
+
+/** Days the detail sheets can show (today included): all the days of the daily list. */
+export const DETAIL_DAYS = 16;
+
+/**
+ * The hour-by-hour detail behind the sheets, fetched only when one is about to open: every forecast day plus
+ * yesterday, so a sheet can compare a day with the one before it.
+ */
+export const getHourlyDetail = ({latitude, longitude}: Coordinates) =>
+    api.get<HourlyDetailResponse>("forecast", FORECAST, {
+        params: {...BASE_PARAMS, latitude, longitude, hourly: DETAIL_HOURLY_FIELDS.join(","), forecast_days: DETAIL_DAYS, past_days: 1},
     });
 
 /** Current temperature and sky for many places in one request (Open-Meteo accepts comma-separated coordinates). */

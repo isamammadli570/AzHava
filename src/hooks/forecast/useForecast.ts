@@ -1,9 +1,10 @@
 import {useCallback, useMemo} from "react";
 import {keepPreviousData, queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
-import {getCurrentBatch, getForecast, type CurrentSnapshotResponse, type ForecastResponse} from "@/api/forecast.api";
+import {getCurrentBatch, getForecast, getHourlyDetail, type CurrentSnapshotResponse, type ForecastResponse} from "@/api/forecast.api";
 import {ERRORS} from "@/constants/errors";
 import {FORECAST_STALE_TIME, QUERY_KEYS} from "@/constants/other";
 import {localDateKey} from "@/helpers/dates";
+import {toDetailHours} from "@/helpers/detail";
 import {splitYesterday, toDaily, toHourly} from "@/helpers/forecast";
 import type {Place} from "@/helpers/place";
 import {loadErrorMeta} from "@/hooks/_shared/queryErrorMeta";
@@ -46,7 +47,7 @@ export const useGetForecast = (place: Place | null) => {
     const hourly = useMemo(() => (data ? toHourly(data.hourly, data.current.time) : []), [data]);
     const {yesterday, days} = useMemo(() => (data ? splitDays(data) : NO_DAYS), [data]);
 
-    return {...query, current: data?.current, timezone: data?.timezone ?? "UTC", hourly, daily: days, yesterday};
+    return {...query, current: data?.current, timezone: data?.timezone ?? "UTC", utcOffset: data?.utc_offset_seconds ?? 0, hourly, daily: days, yesterday};
 };
 
 /** Warms the forecast of a place the pointer is resting on, so opening it feels instant. */
@@ -78,4 +79,24 @@ export const useGetCurrentBatch = (places: Place[]) => {
     }, [query.data, places]);
 
     return {...query, byPlaceId};
+};
+
+const hourlyDetailQueryOptions = (place: Coordinates) =>
+    queryOptions({
+        queryKey: [QUERY_KEYS.HOURLY_DETAIL, coordinatesKey(place)],
+        queryFn: () => getHourlyDetail(place),
+        staleTime: FORECAST_STALE_TIME,
+    });
+
+/** Hour-by-hour detail for every forecast day, behind the detail sheets; only fetched while `enabled` (a sheet is open). */
+export const useGetHourlyDetail = (place: Coordinates, enabled: boolean) => {
+    const query = useQuery({...hourlyDetailQueryOptions(place), enabled, meta: loadErrorMeta(ERRORS.FORECAST)});
+    const hours = useMemo(() => (query.data ? toDetailHours(query.data.hourly) : []), [query.data]);
+    return {...query, hours};
+};
+
+/** Starts loading the detail as soon as a sheet is likely to open (pointer resting on a card), so it opens filled. */
+export const usePrefetchHourlyDetail = () => {
+    const queryClient = useQueryClient();
+    return useCallback((place: Coordinates) => void queryClient.prefetchQuery(hourlyDetailQueryOptions(place)), [queryClient]);
 };

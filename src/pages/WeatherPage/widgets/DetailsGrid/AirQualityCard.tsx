@@ -47,22 +47,22 @@ export const AirQualityCard = ({air, isLoading, className, style}: AirQualityCar
             <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
                 <div>
                     <p className="flex items-baseline gap-3">
-                        <AnimatedNumber value={aqi} className="font-display text-4xl font-semibold"/>
-                        <span className="flex items-center gap-1.5 text-lg font-semibold" style={{color: LEVEL_COLOR[level]}}>
-                            <span className="size-2.5 rounded-full bg-current shadow-[0_0_12px_currentColor]" aria-hidden/>
+                        <AnimatedNumber value={aqi} className="text-5xl font-extralight tracking-tight"/>
+                        <span className="flex items-center gap-2 text-[11px] font-light tracking-[0.24em] uppercase" style={{color: LEVEL_COLOR[level]}}>
+                            <span className="size-1.5 rounded-full bg-current shadow-[0_0_10px_currentColor]" aria-hidden/>
                             {t(`air.levels.${level}`)}
                         </span>
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{t(`air.advice.${level}`)}</p>
+                    <p className="mt-2 text-sm font-light text-muted-foreground">{t(`air.advice.${level}`)}</p>
                 </div>
-                <span className="text-xs text-subtle-foreground">{t("air.scale")}</span>
+                <span className="text-[10px] font-light tracking-[0.2em] text-subtle-foreground uppercase">{t("air.scale")}</span>
             </div>
             <ScaleMarker className="mt-4" position={(aqi / AQI_SCALE_MAX) * 100} gradient={AQI_GRADIENT}/>
             <dl className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {POLLUTANTS.map((pollutant) => (
-                    <div key={pollutant} className="rounded-xl bg-white/6 px-2.5 py-2">
-                        <dt className="text-[11px] font-semibold text-subtle-foreground">{t(`air.pollutants.${pollutant}`)}</dt>
-                        <dd className={cn("mt-0.5 text-sm font-semibold tabular")}>
+                    <div key={pollutant} className="rounded-xl border border-white/8 bg-white/[0.03] px-2.5 py-2">
+                        <dt className="text-[10px] font-light tracking-[0.14em] text-subtle-foreground">{t(`air.pollutants.${pollutant}`)}</dt>
+                        <dd className={cn("mt-0.5 text-[15px] font-light tabular")}>
                             {formatNumber(air[pollutant], air[pollutant] !== null && (air[pollutant] ?? 0) < 10 ? 1 : 0)}
                             <span className="ml-0.5 text-[10px] font-normal text-subtle-foreground">{t("air.unit")}</span>
                         </dd>

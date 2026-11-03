@@ -9,7 +9,6 @@ import {matchesSearch} from "@/helpers/search";
 import {useSearchPlaces} from "@/hooks/geocoding";
 import {usePrefetchForecast} from "@/hooks/forecast";
 import {useGeolocation} from "@/hooks/useGeolocation";
-import {useHotkey} from "@/hooks/useHotkey";
 import {useRecentPlaces} from "@/hooks/useRecentPlaces";
 import {usePlaceLabel} from "@/hooks/usePlaceLabel";
 import {preloadRoute} from "@/router/preload";
@@ -20,18 +19,24 @@ const BUILT_IN_PLACES = CITIES.map(placeFromCity);
 const BUILT_IN_LIMIT = 6;
 const NO_PLACES: Place[] = [];
 
-type PlaceSearchProps = {className?: string};
+type PlaceSearchProps = {
+    className?: string;
+    /** Shown inside the search sheet: the list is always open and part of the flow instead of a dropdown. */
+    isInline?: boolean;
+    /** Called after a place is picked (the sheet closes itself with it). */
+    onChoose?: () => void;
+};
 
 /**
- * Header combobox: built-in cities match instantly (diacritics-insensitive, in every language), and the worldwide
- * geocoding results follow once the user stops typing. Fully keyboard-driven; "/" focuses it from anywhere.
+ * City search: built-in cities match instantly (diacritics-insensitive, in every language), and the worldwide
+ * geocoding results follow once the user stops typing. Fully keyboard-driven.
  */
-export const PlaceSearch = ({className}: PlaceSearchProps) => {
+export const PlaceSearch = ({className, isInline = false, onChoose}: PlaceSearchProps) => {
     const {t} = useTranslation();
     const navigate = useNavigate();
     const {placeName, countryName} = usePlaceLabel();
     const [term, setTerm] = useState("");
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(isInline);
     const [activeIndex, setActiveIndex] = useState(0);
     const rootRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -66,16 +71,14 @@ export const PlaceSearch = ({className}: PlaceSearchProps) => {
     const isLoading = isSearching || (isPending && trimmed.length >= SEARCH_MIN_LENGTH);
     const isEmpty = options.length === 0 && !isLoading && trimmed.length >= SEARCH_MIN_LENGTH;
 
-    useHotkey("/", () => inputRef.current?.focus());
-
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || isInline) return;
         const closeOutside = (event: PointerEvent) => {
             if (!rootRef.current?.contains(event.target as Node)) setIsOpen(false);
         };
         document.addEventListener("pointerdown", closeOutside);
         return () => document.removeEventListener("pointerdown", closeOutside);
-    }, [isOpen]);
+    }, [isOpen, isInline]);
 
     useEffect(() => {
         listRef.current?.querySelector(`[data-index="${activeIndex}"]`)?.scrollIntoView({block: "nearest"});
@@ -86,6 +89,7 @@ export const PlaceSearch = ({className}: PlaceSearchProps) => {
         setIsOpen(false);
         inputRef.current?.blur();
         void navigate(placeRoute(place));
+        onChoose?.();
     };
 
     const moveActive = (step: number) => {
@@ -205,7 +209,7 @@ export const PlaceSearch = ({className}: PlaceSearchProps) => {
 
             {isOpen && (
                 // Solid rather than glass: results must stay readable over a busy page and any sky.
-                <div className="absolute inset-x-0 top-full z-50 mt-2 animate-scale-in overflow-hidden rounded-2xl border border-glass-border bg-surface p-1.5 shadow-2xl [transform-origin:top]">
+                <div className={cn(isInline ? "mt-3" : "absolute inset-x-0 top-full z-50 mt-2 animate-scale-in overflow-hidden rounded-2xl border border-glass-border bg-surface p-1.5 shadow-2xl [transform-origin:top]")}>
                     <ul ref={listRef} id={listId} role="listbox" aria-label={t("search.label")} className="max-h-[min(26rem,65vh)] overflow-y-auto overscroll-contain">
                         {shownRecent.length > 0 && <li role="presentation" className="section-label px-3 pt-2 pb-1">{t("search.recent")}</li>}
                         {shownRecent.map((place, index) => renderOption(place, index, true))}

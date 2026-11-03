@@ -29,7 +29,7 @@ export const PressureCard = ({pressure, style}: PressureCardProps) => {
     const angle = START + ratio * SWEEP;
 
     return (
-        <DetailCard style={style} icon={<Gauge/>} title={t("details.pressure")} value={Math.round(pressure)} unit={t("details.hpa")} info={t("details.info.pressure")} caption={t(`details.pressureLevels.${pressureLevel(pressure)}`)}>
+        <DetailCard style={style} icon={<Gauge/>} title={t("details.pressure")} value={Math.round(pressure)} unit={t("details.hpa")} sheet="pressure" caption={t(`details.pressureLevels.${pressureLevel(pressure)}`)}>
             <svg viewBox="0 0 100 80" className="mx-auto h-20 w-28 sm:h-24 sm:w-32" aria-hidden>
                 <path d={arc(START, START + SWEEP, 40)} fill="none" stroke="rgb(255 255 255 / 0.12)" strokeWidth="7" strokeLinecap="round"/>
                 <path d={arc(START, START + SWEEP, 40)} fill="none" stroke="url(#pressure-gradient)" strokeWidth="7" strokeLinecap="round" pathLength={1} strokeDasharray={`${ratio} 1`} className="transition-[stroke-dasharray] duration-1000"/>

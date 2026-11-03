@@ -7,8 +7,6 @@ const LOW_FPS = 50;
 
 type NetworkInformation = {saveData?: boolean};
 
-export const isLowQuality = (): boolean => document.documentElement.dataset.quality === LOW;
-
 const setLowQuality = () => {
     document.documentElement.dataset.quality = LOW;
     try {
@@ -16,13 +14,6 @@ const setLowQuality = () => {
     } catch {
         /* private mode */
     }
-    window.dispatchEvent(new Event(QUALITY_KEY));
-};
-
-/** Subscribes to the switch to low quality (the rain canvas uses it to thin out its particles). */
-export const onQualityChange = (listener: () => void) => {
-    window.addEventListener(QUALITY_KEY, listener);
-    return () => window.removeEventListener(QUALITY_KEY, listener);
 };
 
 /** Average frames per second over a window, measured with requestAnimationFrame. */
