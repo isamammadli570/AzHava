@@ -1,5 +1,5 @@
 {
-    "appName": "AzHava",
+    "appName": "Lumen",
     "tagline": "Живая погода в Азербайджане",
     "skipToContent": "Перейти к содержимому",
     "nav": {
@@ -62,7 +62,7 @@
     "about": "Что это?",
     "install": {
         "button": "Установить приложение",
-        "done": "AzHava установлено",
+        "done": "Lumen установлено",
         "iosTitle": "Установка на iPhone",
         "iosStep1": "Нажмите «Поделиться» в Safari",
         "iosStep2": "Выберите «На экран Домой»"

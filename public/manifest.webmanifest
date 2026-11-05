@@ -1,7 +1,7 @@
 {
     "id": "/",
-    "name": "AzHava — Hava proqnozu",
-    "short_name": "AzHava",
+    "name": "Lumen — Hava proqnozu",
+    "short_name": "Lumen",
     "description": "Azərbaycan şəhərləri üçün canlı hava proqnozu: cari hava, saatlıq və 16 günlük proqnoz, hava keyfiyyəti.",
     "lang": "az",
     "dir": "ltr",

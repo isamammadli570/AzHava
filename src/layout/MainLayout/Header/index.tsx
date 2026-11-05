@@ -84,7 +84,7 @@ export const Header = () => {
                 </NavLink>
 
                 <Link to={ROUTES.ROOT} aria-label={t("nav.home")} className="rounded-xl px-2 py-1 text-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-                    <span className="block pl-[0.6em] text-[15px] font-light tracking-[0.6em]">AZHAVA</span>
+                    <span className="block pl-[0.6em] text-[15px] font-light tracking-[0.6em]">LUMEN</span>
                     <span className="block pl-[0.4em] text-[8.5px] font-light tracking-[0.4em] text-muted-foreground uppercase">{t("brandSubtitle")}</span>
                 </Link>
 

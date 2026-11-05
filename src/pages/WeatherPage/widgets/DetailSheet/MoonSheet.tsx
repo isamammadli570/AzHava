@@ -63,14 +63,16 @@ export const MoonSheet = ({now, latitude, longitude, utcOffset, timezone, locale
     }, []);
     useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
-    // The compact header takes over once the big moon and its ruler have scrolled away.
+    // The compact header takes over once the big moon and its ruler have scrolled away. Read from the sheet's own
+    // scroll position (an observer on an empty marker also fired when only the ruler scrolled sideways).
     useEffect(() => {
         const sentinel = sentinelRef.current;
         const root = sentinel?.closest<HTMLElement>(".overflow-y-auto");
         if (!sentinel || !root) return;
-        const observer = new IntersectionObserver(([entry]) => setIsCompact(!entry.isIntersecting), {root, rootMargin: "-120px 0px 0px 0px"});
-        observer.observe(sentinel);
-        return () => observer.disconnect();
+        const update = () => setIsCompact(root.scrollTop > sentinel.offsetTop - 120);
+        update();
+        root.addEventListener("scroll", update, {passive: true});
+        return () => root.removeEventListener("scroll", update);
     }, []);
 
     const onScroll = () => {

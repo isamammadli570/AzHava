@@ -1,4 +1,4 @@
-/* AzHava service worker. Built by pwa/plugin.ts, which fills in the version and the precache list. */
+/* Lumen service worker. Built by pwa/plugin.ts, which fills in the version and the precache list. */
 
 const VERSION = "__VERSION__";
 const PRECACHE = __PRECACHE__;

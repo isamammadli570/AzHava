@@ -7,9 +7,9 @@ import type {MoonView} from "@/helpers/moon";
  * ±100°): the LRO colour map (2048², the surface) and a slope map made from the LOLA height map (512², the relief).
  * Every point of the visible face, the limb included, comes from its real map position.
  *
- * Light follows lunar photometry (Lommel–Seeliger: the full moon stays bright to its edge) on the relief-perturbed
- * surface, so crater walls and mountains catch the light and cast shade near the terminator, which itself fades
- * softly over the curve; the night side keeps faint earthshine. The sphere is drawn at twice the screen's density
+ * Daylight fades gradually over the curve and melts into the night past the terminator, with no dividing line; on top
+ * of it the relief lifts slopes facing the sun and shades the others, strongest where the sun is low, so craters and
+ * ridges stand out along the terminator. The night side keeps faint earthshine. The sphere is drawn at twice the screen's density
  * for a crisp limb. One shared WebGL context renders every moon on the page and each result is copied to that moon's
  * own 2-D canvas, so thirty calendar moons cost one context, not thirty.
  */
@@ -59,7 +59,6 @@ void main() {
     vec2 p = v / max(radius, 1.0);
     vec3 m = toMoon(vec3(p, sqrt(max(0.0, 1.0 - dot(p, p)))));
     vec3 sun = normalize(toMoon(light));
-    vec3 eye = toMoon(vec3(0.0, 0.0, 1.0));
 
     // Moon frame → map: longitude east to the right, latitude north up.
     float longitude = atan(m.x, m.z);
@@ -75,15 +74,24 @@ void main() {
     vec3 north = vec3(-sin(longitude) * sin(latitude), cos(latitude), -cos(longitude) * sin(latitude));
     vec3 normal = normalize(m - slope.x * east - slope.y * north);
 
-    // Lommel–Seeliger blended with a little Lambert (a gentle darkening towards the terminator), all on the relief:
-    // slopes facing the sun brighten, slopes facing away fall into shade, so craters stand out along the terminator.
-    float incidence = max(dot(normal, sun), 0.0);
-    float emergence = max(dot(normal, eye), 0.05);
-    float lit = mix(2.0 * incidence / (incidence + emergence), 1.5 * incidence, 0.45);
-    // Shadow edges on the relief, and the sphere's own terminator softened over a few degrees.
-    lit *= smoothstep(0.0, 0.1, dot(normal, sun)) * smoothstep(-0.06, 0.1, dot(m, sun));
+    // Daylight fades gradually over the curve instead of stopping at a line: full under a high sun, dimming slowly
+    // towards the terminator and melting into the night a little past it (the sun is a disc, not a point, and the
+    // surface is rough), so the lit and dark sides blend like in a photograph.
+    float sunHeight = dot(m, sun);
+    // A crescent never sees the sun high, so the fade is scaled to the highest sun on the visible face: a thin
+    // crescent still shines bright along its limb, as a real one does.
+    float highestSun = light.z >= 0.0 ? 1.0 : length(light.xy);
+    float daylight = pow(smoothstep(-0.16 * highestSun, 0.6 * highestSun, sunHeight), 1.35);
+    // The relief on top: how much more (or less) a slope faces the sun than the smooth sphere would. Its effect grows
+    // where the sun is low, so craters and ridges stand out along the terminator and fade out under a high sun.
+    float tilt = dot(normal, sun) - sunHeight;
+    float lowSun = 1.0 - smoothstep(0.15, 0.75, sunHeight);
+    float lit = daylight * clamp(1.0 + tilt * mix(1.4, 3.8, lowSun), 0.25, 1.5);
 
-    vec3 color = pow(albedo * (min(lit, 1.3) * 1.1 + earthshine), vec3(1.0 / 2.2));
+    // Earthshine is dim and diffuse: it lights a softened copy of the map (a few mip levels down), which also hides
+    // the survey seams of the map that sharp light would show on the night side.
+    vec3 nightAlbedo = pow(texture2D(surface, uv, 2.5).rgb, vec3(2.2 * 1.4)) * 1.3;
+    vec3 color = pow(albedo * lit * 0.85 + nightAlbedo * earthshine, vec3(1.0 / 2.2));
     gl_FragColor = vec4(color * edge, edge);
 }`;
 

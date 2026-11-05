@@ -1,4 +1,4 @@
-# AzHava
+# Lumen
 
 Live weather for Azerbaijan, with a sky that changes with the weather. A portfolio project by **İsa Məmmədli**.
 

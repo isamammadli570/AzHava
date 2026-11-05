@@ -1,5 +1,5 @@
 {
-    "appName": "AzHava",
+    "appName": "Lumen",
     "tagline": "Azərbaycanın canlı hava proqnozu",
     "skipToContent": "Əsas məzmuna keç",
     "nav": {
@@ -62,7 +62,7 @@
     "about": "Bu nədir?",
     "install": {
         "button": "Tətbiqi quraşdır",
-        "done": "AzHava telefonunuza quraşdırıldı",
+        "done": "Lumen telefonunuza quraşdırıldı",
         "iosTitle": "iPhone-a quraşdırmaq",
         "iosStep1": "Safari-də «Paylaş» düyməsinə toxunun",
         "iosStep2": "«Ana ekrana əlavə et» seçin"

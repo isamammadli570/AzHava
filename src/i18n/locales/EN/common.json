@@ -1,5 +1,5 @@
 {
-    "appName": "AzHava",
+    "appName": "Lumen",
     "tagline": "Live weather for Azerbaijan",
     "skipToContent": "Skip to content",
     "nav": {
@@ -62,7 +62,7 @@
     "about": "What is this?",
     "install": {
         "button": "Install app",
-        "done": "AzHava is installed",
+        "done": "Lumen is installed",
         "iosTitle": "Install on iPhone",
         "iosStep1": "Tap «Share» in Safari",
         "iosStep2": "Choose «Add to Home Screen»"

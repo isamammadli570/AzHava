@@ -3,7 +3,7 @@ import {cn} from "@/lib/utils";
 
 type LogoProps = {className?: string; isCompact?: boolean};
 
-/** AzHava mark (sun behind a cloud) and wordmark. */
+/** Lumen mark (sun behind a cloud) and wordmark. */
 export const Logo = ({className, isCompact = false}: LogoProps) => {
     const {t} = useTranslation();
 
