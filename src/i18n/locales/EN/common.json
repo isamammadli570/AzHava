@@ -64,8 +64,17 @@
         "button": "Install app",
         "done": "Lumen is installed",
         "iosTitle": "Install on iPhone",
-        "iosStep1": "Tap «Share» in Safari",
-        "iosStep2": "Choose «Add to Home Screen»"
+        "ios": {
+            "safariStep1": "Tap «Share» in Safari (on newer iOS, first tap «⋯» next to the address bar)",
+            "otherStep1": "Tap «Share» in the address bar",
+            "step2": "Scroll down and choose «Add to Home Screen»",
+            "step3": "Tap «Add» and Lumen appears on your Home Screen as an app",
+            "inAppNote": "This page is open in an app’s built-in browser (WhatsApp, Instagram…), which can’t add it to the Home Screen.",
+            "inAppStep1": "Tap «⋯» or the compass button at the top",
+            "inAppStep2": "Choose «Open in Safari», then install it there",
+            "copy": "Copy link",
+            "copied": "Link copied, paste it into Safari"
+        }
     },
     "update": {
         "ready": "A new version is ready",

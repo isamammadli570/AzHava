@@ -64,8 +64,17 @@
         "button": "Tətbiqi quraşdır",
         "done": "Lumen telefonunuza quraşdırıldı",
         "iosTitle": "iPhone-a quraşdırmaq",
-        "iosStep1": "Safari-də «Paylaş» düyməsinə toxunun",
-        "iosStep2": "«Ana ekrana əlavə et» seçin"
+        "ios": {
+            "safariStep1": "Safari-də «Paylaş» düyməsinə toxunun (yeni iOS-da əvvəlcə ünvan sətrinin yanındakı «⋯» düyməsinə)",
+            "otherStep1": "Ünvan sətrindəki «Paylaş» düyməsinə toxunun",
+            "step2": "Siyahını aşağı sürüşdürüb «Ana ekrana əlavə et» seçin",
+            "step3": "«Əlavə et» düyməsinə toxunun, Lumen ana ekranda tətbiq kimi görünəcək",
+            "inAppNote": "Bu səhifə tətbiqin (WhatsApp, Instagram və s.) daxili brauzerində açılıb, oradan ana ekrana əlavə etmək olmur.",
+            "inAppStep1": "Yuxarıdakı «⋯» və ya kompas düyməsinə toxunun",
+            "inAppStep2": "«Safari-də aç» seçin, sonra orada quraşdırın",
+            "copy": "Linki kopyala",
+            "copied": "Link kopyalandı, Safari-yə yapışdırın"
+        }
     },
     "update": {
         "ready": "Yeni versiya hazırdır",
